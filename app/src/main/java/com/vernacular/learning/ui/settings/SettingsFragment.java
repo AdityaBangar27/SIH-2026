@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.vernacular.learning.R;
 import com.vernacular.learning.ui.about.AboutActivity;
 import com.vernacular.learning.ui.downloads.DownloadContentActivity;
@@ -20,6 +21,7 @@ import com.vernacular.learning.utils.ThemeHelper;
 
 public class SettingsFragment extends Fragment {
     private TextView tvCurrentThemeLabel;
+    private SwitchMaterial switchSettingTheme;
 
     @Nullable
     @Override
@@ -32,8 +34,20 @@ public class SettingsFragment extends Fragment {
         LinearLayout rowAbout = root.findViewById(R.id.rowSettingAbout);
         LinearLayout rowHelp = root.findViewById(R.id.rowSettingHelp);
         tvCurrentThemeLabel = root.findViewById(R.id.tvCurrentThemeLabel);
+        switchSettingTheme = root.findViewById(R.id.switchSettingTheme);
 
-        updateThemeLabel();
+        updateThemeViews();
+
+        if (switchSettingTheme != null) {
+            switchSettingTheme.setOnClickListener(v -> {
+                boolean nextState = switchSettingTheme.isChecked();
+                ThemeHelper.setDarkMode(requireContext(), nextState);
+                Toast.makeText(requireContext(),
+                        nextState ? "Dark mode enabled" : "Light mode enabled",
+                        Toast.LENGTH_SHORT).show();
+                requireActivity().recreate();
+            });
+        }
 
         // Language settings picker dialog
         rowLanguage.setOnClickListener(v -> showLanguagePickerDialog());
@@ -65,18 +79,17 @@ public class SettingsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        updateThemeLabel();
+        updateThemeViews();
     }
 
-    private void updateThemeLabel() {
-        if (tvCurrentThemeLabel != null && getContext() != null) {
-            String theme = ThemeHelper.getSavedTheme(requireContext());
-            if (ThemeHelper.THEME_DARK.equals(theme)) {
-                tvCurrentThemeLabel.setText(R.string.theme_dark);
-            } else if (ThemeHelper.THEME_LIGHT.equals(theme)) {
-                tvCurrentThemeLabel.setText(R.string.theme_light);
-            } else {
-                tvCurrentThemeLabel.setText(R.string.theme_system);
+    private void updateThemeViews() {
+        if (getContext() != null) {
+            boolean isDark = ThemeHelper.isDarkMode(requireContext());
+            if (tvCurrentThemeLabel != null) {
+                tvCurrentThemeLabel.setText(isDark ? R.string.theme_dark : R.string.theme_light);
+            }
+            if (switchSettingTheme != null) {
+                switchSettingTheme.setChecked(isDark);
             }
         }
     }

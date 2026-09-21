@@ -155,17 +155,15 @@
                         android:id="@+id/tvCurrentThemeLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="6dp"
+                        android:layout_marginEnd="8dp"
                         android:text="Light"
                         android:textColor="?attr/customTextSecondaryColor"
                         android:textSize="13sp" />
 
-                    <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
-                        android:contentDescription="Next"
-                        android:src="@drawable/ic_chevron_right"
-                        app:tint="?attr/customTextSecondaryColor" />
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switchSettingTheme"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
                 </LinearLayout>
 
                 <View

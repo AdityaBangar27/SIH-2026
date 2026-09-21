@@ -16,28 +16,29 @@ public class ThemeHelper {
      * Applies the saved theme immediately upon app startup or switch.
      */
     public static void applyTheme(Context context) {
-        String theme = getSavedTheme(context);
-        switch (theme) {
-            case THEME_LIGHT:
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-                break;
-            case THEME_DARK:
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                break;
-            case THEME_SYSTEM:
-            default:
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
-                break;
+        boolean isDark = isDarkMode(context);
+        int targetMode = isDark ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO;
+        if (AppCompatDelegate.getDefaultNightMode() != targetMode) {
+            AppCompatDelegate.setDefaultNightMode(targetMode);
         }
+    }
+
+    /**
+     * Updates theme preference for dark mode and applies it immediately across the app.
+     */
+    public static void setDarkMode(Context context, boolean isDark) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putString(KEY_THEME, isDark ? THEME_DARK : THEME_LIGHT).commit();
+        int targetMode = isDark ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO;
+        AppCompatDelegate.setDefaultNightMode(targetMode);
     }
 
     /**
      * Updates theme preference and applies it immediately across the app without restart.
      */
     public static void setTheme(Context context, String themeMode) {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        prefs.edit().putString(KEY_THEME, themeMode).apply();
-        applyTheme(context);
+        boolean isDark = THEME_DARK.equalsIgnoreCase(themeMode);
+        setDarkMode(context, isDark);
     }
 
     /**
@@ -50,13 +51,6 @@ public class ThemeHelper {
 
     public static boolean isDarkMode(Context context) {
         String theme = getSavedTheme(context);
-        if (THEME_DARK.equals(theme)) {
-            return true;
-        } else if (THEME_LIGHT.equals(theme)) {
-            return false;
-        }
-        int nightMode = context.getResources().getConfiguration().uiMode 
-                & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
-        return nightMode == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+        return THEME_DARK.equalsIgnoreCase(theme);
     }
 }

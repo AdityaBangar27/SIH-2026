@@ -78,10 +78,10 @@
     <dimen name="text_headline">22sp</dimen>
     <dimen name="text_small">11sp</dimen>
     <dimen name="text_title">18sp</dimen>
-    <string name="about_desc">Mother tongue based education for a brighter future. Designed to empower primary school teachers in Jharkhand to teach students seamlessly in Santhali, Mundari, and Ho.</string>
+    <string name="about_desc">वाणी-SHIKSHA is a Cultural Connectivity Platform designed to empower primary school teachers in Jharkhand to teach students seamlessly in their mother tongues: Santhali, Mundari, and Ho.</string>
     <string name="about_title">About Us</string>
-    <string name="app_name">PALASH AI</string>
-    <string name="app_tagline">Learn in your mother tongue</string>
+    <string name="app_name">वाणी-SHIKSHA</string>
+    <string name="app_tagline">CULTURAL CONNECTIVITY PLATFORM</string>
     <string name="app_version">Version 1.0.0</string>
     <string name="btn_apply_theme">Apply</string>
     <string name="btn_back_to_lessons">Back to Lessons</string>
@@ -94,8 +94,13 @@
     <string name="btn_remove">Remove</string>
     <string name="btn_retry">Retry</string>
     <string name="change_language_hint">Change language from the drawer Settings</string>
+    <string name="cultural_connectivity_platform">CULTURAL CONNECTIVITY PLATFORM</string>
     <string name="current_language_pair">CURRENT LANGUAGE PAIR</string>
     <string name="curriculum">Curriculum</string>
+    <string name="dark_mode_desc">Switch to dark styling for comfort in low-light environments</string>
+    <string name="dark_mode_status_off">Dark Mode is currently OFF</string>
+    <string name="dark_mode_status_on">Dark Mode is currently ON</string>
+    <string name="dark_mode_title">Dark Mode</string>
     <string name="developed_for">Developed for SIH 2026</string>
     <string name="download_content_title">Download Content</string>
     <string name="downloaded_state">Downloaded ✓</string>
@@ -135,7 +140,7 @@
     <string name="nav_settings">Settings</string>
     <string name="need_download_badge">Needs Download</string>
     <string name="offline_badge">Offline Available</string>
-    <string name="palash_ai">PALASH AI</string>
+    <string name="palash_ai">वाणी-SHIKSHA</string>
     <string name="pkg_audio_files">Audio Files</string>
     <string name="pkg_audio_size">180 MB</string>
     <string name="pkg_images_resources">Images &amp; Resources</string>
@@ -175,6 +180,8 @@
     <string name="theme_settings_title">Theme Settings</string>
     <string name="theme_system">System Default</string>
     <string name="translation_label">Translation:</string>
+    <string name="vaani_shiksha">वाणी-SHIKSHA</string>
+    <string name="vaani_shiksha_ai">वाणी-SHIKSHA</string>
     <string name="voice_translation_title">Voice Translation</string>
     <string name="welcome_teacher">Welcome, Teacher</string>
     <string name="welcome_teacher_sub">Let\'s make learning easier and inclusive for every child.</string>

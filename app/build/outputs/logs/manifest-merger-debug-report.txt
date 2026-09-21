@@ -104,11 +104,11 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\Aditya bangar\.gra
 	android:fullBackupContent
 		ADDED from C:\SIH\app\src\main\AndroidManifest.xml:13:9-54
 	android:roundIcon
-		ADDED from C:\SIH\app\src\main\AndroidManifest.xml:16:9-51
+		ADDED from C:\SIH\app\src\main\AndroidManifest.xml:16:9-56
 	tools:targetApi
 		ADDED from C:\SIH\app\src\main\AndroidManifest.xml:19:9-29
 	android:icon
-		ADDED from C:\SIH\app\src\main\AndroidManifest.xml:14:9-46
+		ADDED from C:\SIH\app\src\main\AndroidManifest.xml:14:9-51
 	android:allowBackup
 		ADDED from C:\SIH\app\src\main\AndroidManifest.xml:11:9-35
 	android:theme

@@ -2,88 +2,68 @@ package com.vernacular.learning.ui.settings;
 
 import android.os.Bundle;
 import android.widget.ImageView;
-import android.widget.RadioButton;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.vernacular.learning.R;
 import com.vernacular.learning.utils.ThemeHelper;
 
 public class ThemeSettingsActivity extends AppCompatActivity {
-    private MaterialCardView cardOptionLight;
-    private MaterialCardView cardOptionDark;
-    private MaterialCardView cardOptionSystem;
-
-    private RadioButton radioLight;
-    private RadioButton radioDark;
-    private RadioButton radioSystem;
-
-    private String selectedTheme;
+    private SwitchMaterial switchDarkMode;
+    private ImageView ivThemeIcon;
+    private TextView tvThemeStatusLabel;
+    private TextView tvThemeDescription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_theme_settings);
 
         ImageView btnBack = findViewById(R.id.btnThemeBack);
-        cardOptionLight = findViewById(R.id.cardOptionLight);
-        cardOptionDark = findViewById(R.id.cardOptionDark);
-        cardOptionSystem = findViewById(R.id.cardOptionSystem);
+        MaterialCardView cardThemeSwitch = findViewById(R.id.cardThemeSwitch);
+        switchDarkMode = findViewById(R.id.switchDarkMode);
+        ivThemeIcon = findViewById(R.id.ivThemeIcon);
+        tvThemeStatusLabel = findViewById(R.id.tvThemeStatusLabel);
+        tvThemeDescription = findViewById(R.id.tvThemeDescription);
 
-        radioLight = findViewById(R.id.radioLight);
-        radioDark = findViewById(R.id.radioDark);
-        radioSystem = findViewById(R.id.radioSystem);
-
-        MaterialButton btnApply = findViewById(R.id.btnApplyTheme);
-
-        selectedTheme = ThemeHelper.getSavedTheme(this);
-        updateSelectionUI();
+        boolean isDark = ThemeHelper.isDarkMode(this);
+        switchDarkMode.setChecked(isDark);
+        updateStatusViews(isDark);
 
         btnBack.setOnClickListener(v -> finish());
 
-        cardOptionLight.setOnClickListener(v -> {
-            selectedTheme = ThemeHelper.THEME_LIGHT;
-            updateSelectionUI();
+        // Tapping the card or switch immediately toggles the theme
+        cardThemeSwitch.setOnClickListener(v -> {
+            boolean nextState = !switchDarkMode.isChecked();
+            applyThemeToggle(nextState);
         });
 
-        cardOptionDark.setOnClickListener(v -> {
-            selectedTheme = ThemeHelper.THEME_DARK;
-            updateSelectionUI();
-        });
-
-        cardOptionSystem.setOnClickListener(v -> {
-            selectedTheme = ThemeHelper.THEME_SYSTEM;
-            updateSelectionUI();
-        });
-
-        btnApply.setOnClickListener(v -> {
-            ThemeHelper.setTheme(ThemeSettingsActivity.this, selectedTheme);
-            Toast.makeText(ThemeSettingsActivity.this, "Theme applied successfully!", Toast.LENGTH_SHORT).show();
-            finish();
+        switchDarkMode.setOnClickListener(v -> {
+            applyThemeToggle(switchDarkMode.isChecked());
         });
     }
 
-    private void updateSelectionUI() {
-        boolean isLight = ThemeHelper.THEME_LIGHT.equals(selectedTheme);
-        boolean isDark = ThemeHelper.THEME_DARK.equals(selectedTheme);
-        boolean isSystem = ThemeHelper.THEME_SYSTEM.equals(selectedTheme);
+    private void applyThemeToggle(boolean enableDark) {
+        switchDarkMode.setChecked(enableDark);
+        ThemeHelper.setDarkMode(ThemeSettingsActivity.this, enableDark);
+        Toast.makeText(ThemeSettingsActivity.this,
+                enableDark ? "Dark mode enabled" : "Light mode enabled",
+                Toast.LENGTH_SHORT).show();
+        recreate();
+    }
 
-        radioLight.setChecked(isLight);
-        radioDark.setChecked(isDark);
-        radioSystem.setChecked(isSystem);
-
-        int activeStrokeColor = ContextCompat.getColor(this, isDark ? R.color.primary_bright_teal : R.color.primary_forest_green);
-        int inactiveStrokeColor = ContextCompat.getColor(this, isDark ? R.color.border_dark : R.color.border_light);
-
-        cardOptionLight.setStrokeColor(isLight ? activeStrokeColor : inactiveStrokeColor);
-        cardOptionLight.setStrokeWidth(isLight ? 4 : 2);
-
-        cardOptionDark.setStrokeColor(isDark ? activeStrokeColor : inactiveStrokeColor);
-        cardOptionDark.setStrokeWidth(isDark ? 4 : 2);
-
-        cardOptionSystem.setStrokeColor(isSystem ? activeStrokeColor : inactiveStrokeColor);
-        cardOptionSystem.setStrokeWidth(isSystem ? 4 : 2);
+    private void updateStatusViews(boolean isDark) {
+        if (ivThemeIcon != null) {
+            ivThemeIcon.setImageResource(isDark ? R.drawable.ic_moon : R.drawable.ic_sun);
+        }
+        if (tvThemeStatusLabel != null) {
+            tvThemeStatusLabel.setText(isDark ? R.string.dark_mode_status_on : R.string.dark_mode_status_off);
+        }
+        if (tvThemeDescription != null) {
+            tvThemeDescription.setText(isDark ? R.string.theme_dark_desc : R.string.theme_light_desc);
+        }
     }
 }

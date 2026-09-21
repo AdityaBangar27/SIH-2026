@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">PALASH AI</string>
-    <string name="palash_ai">PALASH AI</string>
+    <string name="app_name">वाणी-SHIKSHA</string>
+    <string name="palash_ai">वाणी-SHIKSHA</string>
+    <string name="vaani_shiksha_ai">वाणी-SHIKSHA</string>
+    <string name="vaani_shiksha">वाणी-SHIKSHA</string>
+    <string name="cultural_connectivity_platform">CULTURAL CONNECTIVITY PLATFORM</string>
     <string name="welcome_teacher">Welcome, Teacher</string>
     <string name="welcome_teacher_sub">Let\'s make learning easier and inclusive for every child.</string>
     <string name="current_language_pair">CURRENT LANGUAGE PAIR</string>
@@ -13,7 +16,7 @@
     <string name="curriculum">Curriculum</string>
     <string name="worksheets_toolkit">Worksheets</string>
     <string name="flashcards_toolkit">Flashcards</string>
-    <string name="app_tagline">Learn in your mother tongue</string>
+    <string name="app_tagline">CULTURAL CONNECTIVITY PLATFORM</string>
     <string name="slogan_sub">Bridging language gaps | Building brighter futures</string>
     <string name="gov_jharkhand">Government of Jharkhand</string>
 
@@ -152,4 +155,8 @@
 
     <!-- About Screen -->
     <string name="about_title">About Us</string>
-    <string name="about_desc">Mother tongue based education for a brighter future. Designed to empower primary school teachers in
+    <string name="about_desc">वाणी-SHIKSHA is a Cultural Connectivity Platform designed to empower primary school teachers in Jharkhand to teach students seamlessly in their mother tongues: Santhali, Mundari, and Ho.</string>
+    <string name="app_version">Version 1.0.0</string>
+    <string name="developed_for">Developed for SIH 2026</string>
+    <string name="jharkhand_initiatives">Initiative for Tribal &amp; Regional Languages</string>
+</resources>
