@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="VernacularTheme">
+        <attr name="customBackgroundColor" format="color" />
+        <attr name="customCardColor" format="color" />
+        <attr name="customCardTintColor" format="color" />
+        <attr name="customTextColor" format="color" />
+        <attr name="customTextSecondaryColor" format="color" />
+        <attr name="customBorderColor" format="color" />
+        <attr name="customAccentColor" format="color" />
+        <attr name="customPrimaryColor" format="color" />
+        <attr name="customPrimaryDarkColor" format="color" />
+        <attr name="customNavBgColor" format="color" />
+        <attr name="customNavSelectedColor" format="color" />
+        <attr name="customNavUnselectedColor" format="color" />
+        <attr name="customCardStrokeColor" format="color" />
+    </declare-styleable>
+</resources>

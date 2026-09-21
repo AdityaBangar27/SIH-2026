@@ -1,0 +1,22 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="28dp"
+    android:height="28dp"
+    android:viewportWidth="28"
+    android:viewportHeight="28">
+  <!-- 3 horizontal bars with decreasing lengths matching screenshot -->
+  <path
+      android:strokeColor="#7A9A8C"
+      android:strokeWidth="2.5"
+      android:strokeLineCap="round"
+      android:pathData="M4,8 L24,8" />
+  <path
+      android:strokeColor="#7A9A8C"
+      android:strokeWidth="2.5"
+      android:strokeLineCap="round"
+      android:pathData="M4,14 L18,14" />
+  <path
+      android:strokeColor="#7A9A8C"
+      android:strokeWidth="2.5"
+      android:strokeLineCap="round"
+      android:pathData="M4,20 L12,20" />
+</vector>

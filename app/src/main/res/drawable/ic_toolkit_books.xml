@@ -1,0 +1,38 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+  <!-- Bottom Book (Blue) -->
+  <path
+      android:fillColor="#1E88E5"
+      android:pathData="M10,32 L34,24 L38,27 L14,35 Z" />
+  <path
+      android:fillColor="#ECEFF1"
+      android:pathData="M14,35 L38,27 L36,29 L12,37 Z" />
+  <path
+      android:fillColor="#1565C0"
+      android:pathData="M12,37 L36,29 L40,32 L16,40 Z" />
+
+  <!-- Middle Book (Green) -->
+  <path
+      android:fillColor="#43A047"
+      android:pathData="M12,23 L36,15 L40,18 L16,26 Z" />
+  <path
+      android:fillColor="#ECEFF1"
+      android:pathData="M16,26 L40,18 L38,20 L14,28 Z" />
+  <path
+      android:fillColor="#2E7D32"
+      android:pathData="M14,28 L38,20 L42,23 L18,31 Z" />
+
+  <!-- Top Book (Red/Orange) -->
+  <path
+      android:fillColor="#E53935"
+      android:pathData="M14,14 L38,6 L42,9 L18,17 Z" />
+  <path
+      android:fillColor="#ECEFF1"
+      android:pathData="M18,17 L42,9 L40,11 L16,19 Z" />
+  <path
+      android:fillColor="#C62828"
+      android:pathData="M16,19 L40,11 L44,14 L20,22 Z" />
+</vector>

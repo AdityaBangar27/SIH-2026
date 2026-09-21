@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/customBackgroundColor"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- 1. Top App Bar: PALASH AI + Drawer Menu Icon -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:paddingHorizontal="20dp">
+
+            <!-- PALASH AI Green Brand Text -->
+            <TextView
+                android:id="@+id/tvBrandName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:letterSpacing="0.06"
+                android:text="@string/palash_ai"
+                android:textColor="#2D7D46"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <!-- Drawer Menu Icon (3 horizontal bars) -->
+            <ImageView
+                android:id="@+id/btnDrawerMenu"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:contentDescription="Drawer Menu"
+                android:focusable="true"
+                android:padding="4dp"
+                android:src="@drawable/ic_drawer_menu" />
+        </RelativeLayout>
+
+        <!-- 2. Hero Classroom Illustration Banner -->
+        <ImageView
+            android:id="@+id/ivClassroomHero"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:contentDescription="Classroom Illustration"
+            android:scaleType="centerCrop"
+            android:src="@drawable/palash_classroom_banner" />
+
+        <!-- 3. Overlapping Curved Container -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-22dp"
+            app:cardBackgroundColor="?attr/customCardColor"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="20dp"
+                android:paddingTop="22dp"
+                android:paddingBottom="28dp">
+
+                <!-- Welcome, Teacher Greeting -->
+                <TextView
+                    android:id="@+id/tvWelcomeTeacher"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/welcome_teacher"
+                    android:textColor="?attr/customTextColor"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvWelcomeSub"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="@string/welcome_teacher_sub"
+                    android:textColor="?attr/customTextSecondaryColor"
+                    android:textSize="13sp" />
+
+                <!-- 4. CURRENT LANGUAGE PAIR Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardLanguagePair"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    app:cardBackgroundColor="#EAF6EE"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#D0E7D6"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="18dp"
+                        android:paddingVertical="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing="0.04"
+                            android:text="@string/current_language_pair"
+                            android:textColor="#2D7D46"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+
+                        <!-- Hindi → Santhali संथाली -->
+                        <TextView
+                            android:id="@+id/tvLanguagePairDisplay"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="@string/lang_pair_hindi_santhali"
+                            android:textColor="#142B21"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                        <!-- CHANGE LANGUAGE Button -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnChangeLanguage"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:layout_marginTop="14dp"
+                            android:backgroundTint="#3DA752"
+                            android:text="@string/btn_change_language"
+                            android:textAllCaps="true"
+                            android:textColor="@color/white"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="24dp"
+                            app:elevation="0dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="@string/change_language_hint"
+                            android:textColor="#527063"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- 5. "Your teaching toolkit" Section Header -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:text="@string/your_teaching_toolkit"
+                    android:textColor="?attr/customTextColor"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <!-- Toolkit Cards Row 1: Live Translation & Curriculum -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:orientation="horizontal"
+                    android:weightSum="2">
+
+                    <!-- Card 1: Live Translation -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardLiveTranslation"
+                        android:layout_width="0dp"
+                        android:layout_height="115dp"
+                        android:layout_marginEnd="8dp"
+                        android:layout_weight="1"
+                        android:clickable="true"
+                        android:focusable="true"
+                        app:cardBackgroundColor="?attr/customCardColor"
+                        app:cardCornerRadius="18dp"
+                        app:cardElevation="1dp"
+                        app:strokeColor="?attr/customBorderColor"
+                        app:strokeWidth="1.5dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <ImageView
+                                android:layout_width="38dp"
+                                android:layout_height="38dp"
+                                android:contentDescription="@string/live_translation"
+                                android:src="@drawable/ic_toolkit_mic" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:text="@string/live_translation"
+                                android:textColor="#2D7D46"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Card 2: Curriculum -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardCurriculum"
+                        android:layout_width="0dp"
+                        android:layout_height="115dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:clickable="true"
+                        android:focusable="true"
+                        app:cardBackgroundColor="?attr/customCardColor"
+                        app:cardCornerRadius="18dp"
+                        app:cardElevation="1dp"
+                        app:strokeColor="?attr/customBorderColor"
+                        app:strokeWidth="1.5dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <ImageView
+                                android:layout_width="38dp"
+                                android:layout_height="38dp"
+                                android:contentDescription="@string/curriculum"
+                                android:src="@drawable/ic_toolkit_books" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:text="@string/curriculum"
+                                android:textColor="#2D7D46"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+
+                <!-- Toolkit Cards Row 2: Worksheets & Flashcards -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal"
+                    android:weightSum="2">
+
+                    <!-- Card 3: Worksheets -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardWorksheetsToolkit"
+                        android:layout_width="0dp"
+                        android:layout_height="100dp"
+                        android:layout_marginEnd="8dp"
+                        android:layout_weight="1"
+                        android:clickable="true"
+                        android:focusable="true"
+                        app:cardBackgroundColor="?attr/customCardColor"
+                        app:cardCornerRadius="18dp"
+                        app:cardElevation="1dp"
+                        app:strokeColor="?attr/customBorderColor"
+                        app:strokeWidth="1.5dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="10dp">
+
+                            <ImageView
+                                android:layout_width="30dp"
+                                android:layout_height="30dp"
+                                android:contentDescription="@string/worksheets_toolkit"
+                                android:src="@drawable/ic_worksheet_quick"
+                                app:tint="#2D7D46" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp"
+                                android:text="@string/worksheets_toolkit"
+                                android:textColor="#2D7D46"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Card 4: Flashcards -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardFlashcardsToolkit"
+                        android:layout_width="0dp"
+                        android:layout_height="100dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:clickable="true"
+                        android:focusable="true"
+                        app:cardBackgroundColor="?attr/customCardColor"
+                        app:cardCornerRadius="18dp"
+                        app:cardElevation="1dp"
+                        app:strokeColor="?attr/customBorderColor"
+                        app:strokeWidth="1.5dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="10dp">
+
+                            <ImageView
+                                android:layout_width="30dp"
+                                android:layout_height="30dp"
+                                android:contentDescription="@string/flashcards_toolkit"
+                                android:src="@drawable/ic_apple_single" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp"
+                                android:text="@string/flashcards_toolkit"
+                                android:textColor="#2D7D46"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

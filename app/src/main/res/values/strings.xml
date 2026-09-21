@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PALASH AI</string>
+    <string name="palash_ai">PALASH AI</string>
+    <string name="welcome_teacher">Welcome, Teacher</string>
+    <string name="welcome_teacher_sub">Let\'s make learning easier and inclusive for every child.</string>
+    <string name="current_language_pair">CURRENT LANGUAGE PAIR</string>
+    <string name="lang_pair_hindi_santhali">Hindi   ➔   Santhali  संथाली</string>
+    <string name="btn_change_language">CHANGE LANGUAGE</string>
+    <string name="change_language_hint">Change language from the drawer Settings</string>
+    <string name="your_teaching_toolkit">Your teaching toolkit</string>
+    <string name="live_translation">Live Translation</string>
+    <string name="curriculum">Curriculum</string>
+    <string name="worksheets_toolkit">Worksheets</string>
+    <string name="flashcards_toolkit">Flashcards</string>
+    <string name="app_tagline">Learn in your mother tongue</string>
+    <string name="slogan_sub">Bridging language gaps | Building brighter futures</string>
+    <string name="gov_jharkhand">Government of Jharkhand</string>
+
+    <!-- Bottom Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_lessons">Lessons</string>
+    <string name="nav_materials">Materials</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Home Screen -->
+    <string name="select_class">Select Class</string>
+    <string name="select_subject">Select Subject</string>
+    <string name="select_mother_tongue">Select Mother Tongue</string>
+    <string name="start_lesson">Start Lesson</string>
+    <string name="quick_voice_translation">Voice\nTranslation</string>
+    <string name="quick_worksheets_flashcards">Worksheets &amp;\nFlashcards</string>
+
+    <!-- Dropdown Options -->
+    <string-array name="classes_array">
+        <item>Class 1</item>
+        <item>Class 2</item>
+        <item>Class 3</item>
+        <item>Class 4</item>
+        <item>Class 5</item>
+    </string-array>
+
+    <string-array name="subjects_array">
+        <item>Mathematics</item>
+        <item>Hindi (भाषा)</item>
+        <item>Environmental Studies</item>
+        <item>English</item>
+    </string-array>
+
+    <string-array name="mother_tongues_array">
+        <item>Santhali (ᱥᱟᱱᱛᱟᱲᱤ)</item>
+        <item>Mundari (ᱢᱩᱱᱰᱟᱨᱤ)</item>
+        <item>Ho (ᱦᱳ)</item>
+    </string-array>
+
+    <!-- Lesson Screen -->
+    <string name="lesson_title_math">Mathematics - Class 1</string>
+    <string name="lesson_chapter_numbers">1. Numbers and Counting</string>
+    <string name="lesson_progress_1_5">Lesson 1/5</string>
+    <string name="lesson_hindi_numbers">एक, दो, तीन</string>
+    <string name="lesson_santhali_numbers">ᱮᱠ, ᱫᱳ, ᱛᱤᱱ (ᱢᱤᱫ, ᱵᱟᱨ, ᱯᱮ)</string>
+    <string name="lesson_counting_instructions">Let\'s count the objects. Count and say aloud.</string>
+    <string name="btn_previous">&lt; Previous</string>
+    <string name="btn_next">Next &gt;</string>
+    <string name="btn_back_to_lessons">Back to Lessons</string>
+
+    <!-- Voice Translation -->
+    <string name="voice_translation_title">Voice Translation</string>
+    <string name="lang_hindi">Hindi</string>
+    <string name="lang_santhali">Santhali</string>
+    <string name="lang_mundari">Mundari</string>
+    <string name="lang_ho">Ho</string>
+    <string name="tap_to_speak">Tap to speak</string>
+    <string name="listening_indicator">Listening...</string>
+    <string name="recognized_label">Recognized: </string>
+    <string name="sample_recognized">एक, दो, तीन</string>
+    <string name="translation_label">Translation:</string>
+    <string name="sample_translated">ᱢᱤᱫ, ᱵᱟᱨ, ᱯᱮ</string>
+    <string name="status_ready">Ready. Tap microphone to speak.</string>
+
+    <!-- Worksheets & Flashcards -->
+    <string name="worksheets_and_flashcards">Worksheets &amp; Flashcards</string>
+    <string name="tab_worksheets">Worksheets</string>
+    <string name="tab_flashcards">Flashcards</string>
+    <string name="worksheet_numbers_title">Numbers 1–10</string>
+    <string name="worksheet_numbers_sub">Class 1 • Mathematics</string>
+    <string name="worksheet_addition_title">Addition Practice</string>
+    <string name="worksheet_addition_sub">Class 1 • Mathematics</string>
+    <string name="worksheet_addition_sample">2 + 3 = ?</string>
+    <string name="btn_download_pdf">Download PDF</string>
+    <string name="downloaded_state">Downloaded ✓</string>
+
+    <!-- Flashcards Screen -->
+    <string name="flashcards_title">Flashcards</string>
+    <string name="flashcard_hindi_word">सेब</string>
+    <string name="flashcard_transliteration">(Seb)</string>
+    <string name="flashcard_english_word">Apple</string>
+    <string name="flashcard_santhali_word">ᱟᱯᱮᱞ (Apel / Seb)</string>
+    <string name="flashcard_counter_sample">1 / 10</string>
+    <string name="tap_to_reveal">Tap card to reveal translation</string>
+
+    <!-- Materials Screen -->
+    <string name="materials_title">Learning Materials</string>
+    <string name="search_hint">Search lessons, worksheets, audio...</string>
+    <string name="filter_all">All</string>
+    <string name="filter_math">Mathematics</string>
+    <string name="filter_languages">Languages</string>
+    <string name="filter_science">EVS</string>
+    <string name="offline_badge">Offline Available</string>
+    <string name="need_download_badge">Needs Download</string>
+    <string name="empty_materials_title">No materials found</string>
+    <string name="empty_materials_desc">Try searching with different keywords or switch filters.</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">Settings</string>
+    <string name="setting_language">Language Settings</string>
+    <string name="setting_download_content">Download Content</string>
+    <string name="setting_app_theme">App Theme</string>
+    <string name="setting_about_us">About Us</string>
+    <string name="setting_help_support">Help &amp; Support</string>
+    <string name="setting_offline_mode_title">Offline Mode</string>
+    <string name="setting_offline_mode_desc">All features and downloaded resources are fully available offline.</string>
+
+    <!-- Theme Settings -->
+    <string name="theme_settings_title">Theme Settings</string>
+    <string name="theme_light">Light Theme</string>
+    <string name="theme_light_desc">Soft mint with classroom-friendly forest green</string>
+    <string name="theme_dark">Dark Theme</string>
+    <string name="theme_dark_desc">Deep navy slate with bright high-contrast teal</string>
+    <string name="theme_system">System Default</string>
+    <string name="btn_apply_theme">Apply</string>
+    <string name="dark_mode_title">Dark Mode</string>
+    <string name="dark_mode_desc">Switch to dark styling for comfort in low-light environments</string>
+    <string name="dark_mode_status_on">Dark Mode is currently ON</string>
+    <string name="dark_mode_status_off">Dark Mode is currently OFF</string>
+
+    <!-- Download Content Screen -->
+    <string name="download_content_title">Download Content</string>
+    <string name="pkg_lesson_packages">Lesson Packages</string>
+    <string name="pkg_lesson_size">120 MB</string>
+    <string name="pkg_translation_models">Translation Models</string>
+    <string name="pkg_translation_size">250 MB</string>
+    <string name="pkg_audio_files">Audio Files</string>
+    <string name="pkg_audio_size">180 MB</string>
+    <string name="pkg_images_resources">Images &amp; Resources</string>
+    <string name="pkg_images_size">95 MB</string>
+    <string name="btn_download">Download</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_retry">Retry</string>
+    <string name="btn_remove">Remove</string>
+    <string name="downloaded_success_banner">Downloaded Successfully</string>
+
+    <!-- About Screen -->
+    <string name="about_title">About Us</string>
+    <string name="about_desc">Mother tongue based education for a brighter future. Designed to empower primary school teachers in

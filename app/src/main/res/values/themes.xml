@@ -1,0 +1,81 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base Application Theme (Light Default) -->
+    <style name="Theme.VernacularLearning" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/primary_forest_green</item>
+        <item name="colorPrimaryVariant">@color/primary_dark_forest_green</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/primary_forest_green</item>
+        <item name="colorSecondaryVariant">@color/primary_dark_forest_green</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <!-- Status bar and navigation bar. -->
+        <item name="android:statusBarColor">@color/bg_light</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+        <item name="android:navigationBarColor">@color/nav_bg_light</item>
+
+        <!-- Custom Theme Attributes (Light Mode) -->
+        <item name="customBackgroundColor">@color/bg_light</item>
+        <item name="customCardColor">@color/card_bg_light</item>
+        <item name="customCardTintColor">@color/card_bg_light_tint</item>
+        <item name="customTextColor">@color/text_primary_light</item>
+        <item name="customTextSecondaryColor">@color/text_secondary_light</item>
+        <item name="customBorderColor">@color/border_light</item>
+        <item name="customAccentColor">@color/primary_forest_green</item>
+        <item name="customPrimaryColor">@color/primary_forest_green</item>
+        <item name="customPrimaryDarkColor">@color/primary_dark_forest_green</item>
+        <item name="customNavBgColor">@color/nav_bg_light</item>
+        <item name="customNavSelectedColor">@color/nav_selected_light</item>
+        <item name="customNavUnselectedColor">@color/nav_unselected_light</item>
+        <item name="customCardStrokeColor">@color/border_light</item>
+    </style>
+
+    <!-- Explicit Light Theme for Force Light Option -->
+    <style name="Theme.VernacularLearning.Light" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/primary_forest_green</item>
+        <item name="colorPrimaryVariant">@color/primary_dark_forest_green</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="android:statusBarColor">@color/bg_light</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+        <item name="customBackgroundColor">@color/bg_light</item>
+        <item name="customCardColor">@color/card_bg_light</item>
+        <item name="customCardTintColor">@color/card_bg_light_tint</item>
+        <item name="customTextColor">@color/text_primary_light</item>
+        <item name="customTextSecondaryColor">@color/text_secondary_light</item>
+        <item name="customBorderColor">@color/border_light</item>
+        <item name="customAccentColor">@color/primary_forest_green</item>
+        <item name="customPrimaryColor">@color/primary_forest_green</item>
+        <item name="customPrimaryDarkColor">@color/primary_dark_forest_green</item>
+        <item name="customNavBgColor">@color/nav_bg_light</item>
+        <item name="customNavSelectedColor">@color/nav_selected_light</item>
+        <item name="customNavUnselectedColor">@color/nav_unselected_light</item>
+        <item name="customCardStrokeColor">@color/border_light</item>
+    </style>
+
+    <!-- Explicit Dark Theme for Force Dark Option -->
+    <style name="Theme.VernacularLearning.Dark" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="colorPrimary">@color/primary_bright_teal</item>
+        <item name="colorPrimaryVariant">@color/primary_bright_teal_dark</item>
+        <item name="colorOnPrimary">@color/bg_dark</item>
+        <item name="android:statusBarColor">@color/bg_dark</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="customBackgroundColor">@color/bg_dark</item>
+        <item name="customCardColor">@color/card_bg_dark</item>
+        <item name="customCardTintColor">@color/card_bg_dark_tint</item>
+        <item name="customTextColor">@color/text_primary_dark</item>
+        <item name="customTextSecondaryColor">@color/text_secondary_dark</item>
+        <item name="customBorderColor">@color/border_dark</item>
+        <item name="customAccentColor">@color/primary_bright_teal</item>
+        <item name="customPrimaryColor">@color/primary_bright_teal</item>
+        <item name="customPrimaryDarkColor">@color/primary_bright_teal_dark</item>
+        <item name="customNavBgColor">@color/nav_bg_dark</item>
+        <item name="customNavSelectedColor">@color/nav_selected_dark</item>
+        <item name="customNavUnselectedColor">@color/nav_unselected_dark</item>
+        <item name="customCardStrokeColor">@color/border_dark</item>
+    </style>
+
+    <!-- Splash Theme -->
+    <style name="Theme.VernacularLearning.Splash" parent="Theme.VernacularLearning">
+        <item name="android:windowBackground">@color/bg_light</item>
+    </style>
+</resources>

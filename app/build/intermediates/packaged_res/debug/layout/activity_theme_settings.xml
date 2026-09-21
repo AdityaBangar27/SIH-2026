@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/customBackgroundColor">
+
+    <!-- Top Bar -->
+    <LinearLayout
+        android:id="@+id/themeTopBar"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/btnThemeBack"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Back"
+            android:padding="4dp"
+            android:src="@drawable/ic_arrow_back"
+            app:tint="?attr/customPrimaryColor" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:text="@string/theme_settings_title"
+            android:textColor="?attr/customTextColor"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toTopOf="@+id/btnApplyTheme"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/themeTopBar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="20dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="24dp">
+
+            <!-- 1. LIGHT THEME CARD -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardOptionLight"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:focusable="true"
+                app:cardBackgroundColor="?attr/customCardColor"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeColor="?attr/customPrimaryColor"
+                app:strokeWidth="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:contentDescription="Sun"
+                            android:src="@drawable/ic_sun" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:text="@string/theme_light"
+                            android:textColor="?attr/customTextColor"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <RadioButton
+                            android:id="@+id/radioLight"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:buttonTint="?attr/customPrimaryColor"
+                            android:clickable="false" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="38dp"
+                        android:layout_marginTop="2dp"
+                        android:text="@string/theme_light_desc"
+                        android:textColor="?attr/customTextSecondaryColor"
+                        android:textSize="12sp" />
+
+                    <!-- Mini Light Preview Thumbnail -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="80dp"
+                        android:layout_marginTop="12dp"
+                        app:cardBackgroundColor="#F1F8F4"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="#D4E7DC"
+                        app:strokeWidth="1dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:padding="10dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Vernacular Learning"
+                                android:textColor="#167653"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Learn in your mother tongue"
+                                android:textColor="#527063"
+                                android:textSize="10sp" />
+
+                            <View
+                                android:layout_width="90dp"
+                                android:layout_height="22dp"
+                                android:layout_marginTop="6dp"
+                                android:background="@drawable/bg_pill_accent" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 2. DARK THEME CARD -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardOptionDark"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:clickable="true"
+                android:focusable="true"
+                app:cardBackgroundColor="?attr/customCardColor"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="1dp"
+                app:strokeColor="?attr/customBorderColor"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:contentDescription="Moon"
+                            android:src="@drawable/ic_moon" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:text="@string/theme_dark"
+                            android:textColor="?attr/customTextColor"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <RadioButton
+                            android:id="@+id/radioDark"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:buttonTint="?attr/customPrimaryColor"
+                            android:clickable="false" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="38dp"
+                        android:layout_marginTop="2dp"
+                        android:text="@string/theme_dark_desc"
+                        android:textColor="?attr/customTextSecondaryColor"
+                        android:textSize="12sp" />
+
+                    <!-- Mini Dark Preview Thumbnail -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="80dp"
+                        android:layout_marginTop="12dp"
+                        app:cardBackgroundColor="#071C2C"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="#1D415A"
+                        app:strokeWidth="1dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:padding="10dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Vernacular Learning"
+                                android:textColor="#FFFFFF"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Learn in your mother tongue"
+                                android:textColor="#92B1C4"
+                                android:textSize="10sp" />
+
+                            <View
+                                android:layout_width="90dp"
+                                android:layout_height="22dp"
+                                android:layout_marginTop="6dp"
+                                android:background="#18C58B" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 3. SYSTEM DEFAULT CARD -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardOptionSystem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:clickable="true"
+                android:focusable="true"
+                app:cardBackgroundColor="?attr/customCardColor"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="1dp"
+                app:strokeColor="?attr/customBorderColor"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
+
+                    <ImageView
+                        android:layout_width="26dp"
+                        android:layout_height="26dp"
+                        android:contentDescription="System"
+                        android:src="@drawable/ic_theme"
+                        app:tint="?attr/customPrimaryColor" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:text="@string/theme_system"
+                        android:textColor="?attr/customTextColor"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <RadioButton
+                        android:id="@+id/radioSystem"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:buttonTint="?attr/customPrimaryColor"
+                        android:clickable="false" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Prominent Apply Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnApplyTheme"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginBottom="24dp"
+        android:backgroundTint="?attr/customPrimaryColor"
+        android:text="@string/btn_apply_theme"
+        android:textAllCaps="false"
+        android:textColor="?attr/colorOnPrimary"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:cornerRadius="26dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

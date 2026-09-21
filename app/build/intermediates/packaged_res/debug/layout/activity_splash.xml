@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/splashRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/customBackgroundColor">
+
+    <!-- Top Spacer / Center content vertically -->
+    <LinearLayout
+        android:id="@+id/logoBlock"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/ivKidsIllustration"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="spread">
+
+        <!-- App Leaf Logo -->
+        <ImageView
+            android:id="@+id/ivSplashLogo"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/ic_leaf_logo"
+            app:tint="?attr/customPrimaryColor" />
+
+        <!-- App Name -->
+        <TextView
+            android:id="@+id/tvSplashTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="center"
+            android:lineSpacingExtra="2dp"
+            android:text="Vernacular\nLearning"
+            android:textColor="?attr/customTextColor"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+
+        <!-- Tagline -->
+        <TextView
+            android:id="@+id/tvSplashTagline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/app_tagline"
+            android:textColor="?attr/customTextSecondaryColor"
+            android:textSize="14sp" />
+
+    </LinearLayout>
+
+    <!-- Center Children Illustration -->
+    <ImageView
+        android:id="@+id/ivKidsIllustration"
+        android:layout_width="220dp"
+        android:layout_height="170dp"
+        android:contentDescription="Children learning"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_school_kids"
+        app:layout_constraintBottom_toTopOf="@+id/footerGov"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/logoBlock" />
+
+    <!-- Bottom Emblem & Government of Jharkhand -->
+    <LinearLayout
+        android:id="@+id/footerGov"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="36dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <ImageView
+            android:id="@+id/ivGovEmblem"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:contentDescription="Government of Jharkhand Emblem"
+            android:src="@drawable/ic_jharkhand_gov"
+            app:tint="?attr/customTextSecondaryColor" />
+
+        <TextView
+            android:id="@+id/tvGovText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="@string/gov_jharkhand"
+            android:textColor="?attr/customTextSecondaryColor"
+            android:textSize="12sp"
+            android:textStyle="normal" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/customCardColor"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/theme_settings_title"
+        android:textColor="?attr/customTextColor"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <!-- Light Theme Choice -->
+    <LinearLayout
+        android:id="@+id/dialogChoiceLight"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="16dp"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:contentDescription="Sun"
+            android:src="@drawable/ic_sun" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:layout_weight="1"
+            android:text="@string/theme_light"
+            android:textColor="?attr/customTextColor"
+            android:textSize="15sp" />
+
+        <RadioButton
+            android:id="@+id/dialogRadioLight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:buttonTint="?attr/customPrimaryColor"
+            android:clickable="false" />
+    </LinearLayout>
+
+    <!-- Dark Theme Choice -->
+    <LinearLayout
+        android:id="@+id/dialogChoiceDark"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:contentDescription="Moon"
+            android:src="@drawable/ic_moon" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:layout_weight="1"
+            android:text="@string/theme_dark"
+            android:textColor="?attr/customTextColor"
+            android:textSize="15sp" />
+
+        <RadioButton
+            android:id="@+id/dialogRadioDark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:buttonTint="?attr/customPrimaryColor"
+            android:clickable="false" />
+    </LinearLayout>
+
+    <!-- System Default Choice -->
+    <LinearLayout
+        android:id="@+id/dialogChoiceSystem"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:contentDescription="System"
+            android:src="@drawable/ic_theme"
+            app:tint="?attr/customPrimaryColor" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:layout_weight="1"
+            android:text="@string/theme_system"
+            android:textColor="?attr/customTextColor"
+            android:textSize="15sp" />
+
+        <RadioButton
+            android:id="@+id/dialogRadioSystem"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:buttonTint="?attr/customPrimaryColor"
+            android:clickable="false" />
+    </LinearLayout>
+
+</LinearLayout>

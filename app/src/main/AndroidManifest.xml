@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application
+        android:name=".VernacularApp"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@drawable/ic_leaf_logo"
+        android:label="@string/app_name"
+        android:roundIcon="@drawable/ic_leaf_logo"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.VernacularLearning"
+        tools:targetApi="34">
+
+        <!-- Splash Screen (Launcher) -->
+        <activity
+            android:name=".SplashActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.VernacularLearning.Splash">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Main Hub Activity (Houses Bottom Nav & Core Fragments) -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan" />
+
+        <!-- Lesson Interactive Screen -->
+        <activity
+            android:name=".ui.lesson.LessonActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".MainActivity" />
+
+        <!-- Dedicated Flashcards Screen -->
+        <activity
+            android:name=".ui.flashcards.FlashcardActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".MainActivity" />
+
+        <!-- Theme Selection Screen -->
+        <activity
+            android:name=".ui.settings.ThemeSettingsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".MainActivity" />
+
+        <!-- Download Content Manager Screen -->
+        <activity
+            android:name=".ui.downloads.DownloadContentActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".MainActivity" />
+
+        <!-- About App & SIH 2026 Info Screen -->
+        <activity
+            android:name=".ui.about.AboutActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".MainActivity" />
+
+    </application>
+
+</manifest>
