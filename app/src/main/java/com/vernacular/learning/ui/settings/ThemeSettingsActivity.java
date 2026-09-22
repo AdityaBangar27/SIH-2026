@@ -49,6 +49,9 @@ public class ThemeSettingsActivity extends AppCompatActivity {
     private void applyThemeToggle(boolean enableDark) {
         switchDarkMode.setChecked(enableDark);
         ThemeHelper.setDarkMode(ThemeSettingsActivity.this, enableDark);
+        com.vernacular.learning.data.repository.LearningRepository.getInstance(ThemeSettingsActivity.this).saveSetting(
+                ThemeHelper.KEY_THEME, enableDark ? ThemeHelper.THEME_DARK : ThemeHelper.THEME_LIGHT
+        );
         Toast.makeText(ThemeSettingsActivity.this,
                 enableDark ? "Dark mode enabled" : "Light mode enabled",
                 Toast.LENGTH_SHORT).show();

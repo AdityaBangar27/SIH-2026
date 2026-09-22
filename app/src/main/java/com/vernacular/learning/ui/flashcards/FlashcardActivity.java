@@ -3,20 +3,27 @@ package com.vernacular.learning.ui.flashcards;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.card.MaterialCardView;
 import com.vernacular.learning.R;
-import com.vernacular.learning.data.models.FlashcardItem;
+import com.vernacular.learning.data.local.entities.VocabularyEntity;
 import com.vernacular.learning.data.repository.LearningRepository;
 import com.vernacular.learning.utils.AudioHelper;
+import com.vernacular.learning.utils.PreferenceHelper;
+import com.vernacular.learning.utils.ThemeHelper;
+import java.util.ArrayList;
 import java.util.List;
 
 public class FlashcardActivity extends AppCompatActivity {
-    private List<FlashcardItem> flashcards;
+    private final List<VocabularyEntity> vocabularyList = new ArrayList<>();
     private int currentIndex = 0;
     private boolean isTranslationRevealed = false;
 
+    private MaterialCardView cardMain;
+    private LinearLayout flashcardControls;
+    private LinearLayout layoutEmptyFlashcards;
     private ImageView ivVisual;
     private TextView tvHindi;
     private TextView tvTransliteration;
@@ -24,17 +31,19 @@ public class FlashcardActivity extends AppCompatActivity {
     private TextView tvMotherTongue;
     private TextView tvCardCounter;
     private TextView tvTapHint;
+    private ImageView btnPrev;
+    private ImageView btnNext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        com.vernacular.learning.utils.ThemeHelper.applyTheme(this);
+        ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_flashcard);
 
-        flashcards = LearningRepository.getInstance(this).getSampleFlashcards();
-
         ImageView btnBack = findViewById(R.id.btnFlashcardBack);
-        MaterialCardView cardMain = findViewById(R.id.cardFlashcardMain);
+        cardMain = findViewById(R.id.cardFlashcardMain);
+        flashcardControls = findViewById(R.id.flashcardControls);
+        layoutEmptyFlashcards = findViewById(R.id.layoutEmptyFlashcards);
         ivVisual = findViewById(R.id.ivFlashcardVisual);
         tvHindi = findViewById(R.id.tvFlashcardHindi);
         tvTransliteration = findViewById(R.id.tvFlashcardTransliteration);
@@ -43,8 +52,8 @@ public class FlashcardActivity extends AppCompatActivity {
         ImageView btnAudio = findViewById(R.id.btnFlashcardAudio);
         tvCardCounter = findViewById(R.id.tvCardCounter);
         tvTapHint = findViewById(R.id.tvTapHint);
-        ImageView btnPrev = findViewById(R.id.btnPrevCard);
-        ImageView btnNext = findViewById(R.id.btnNextCard);
+        btnPrev = findViewById(R.id.btnPrevCard);
+        btnNext = findViewById(R.id.btnNextCard);
 
         btnBack.setOnClickListener(v -> finish());
 
@@ -57,8 +66,10 @@ public class FlashcardActivity extends AppCompatActivity {
 
         // Pronunciation button
         btnAudio.setOnClickListener(v -> {
-            FlashcardItem card = flashcards.get(currentIndex);
-            AudioHelper.playPronunciation(FlashcardActivity.this, card.hindiWord, null);
+            if (!vocabularyList.isEmpty() && currentIndex < vocabularyList.size()) {
+                VocabularyEntity card = vocabularyList.get(currentIndex);
+                AudioHelper.playPronunciation(FlashcardActivity.this, card.word, null);
+            }
         });
 
         // Previous Card
@@ -72,27 +83,52 @@ public class FlashcardActivity extends AppCompatActivity {
 
         // Next Card
         btnNext.setOnClickListener(v -> {
-            if (currentIndex < flashcards.size() - 1) {
+            if (currentIndex < vocabularyList.size() - 1) {
                 currentIndex++;
                 isTranslationRevealed = false;
                 displayCard();
             }
         });
 
-        displayCard();
+        loadVocabularyFromDatabase();
+    }
+
+    private void loadVocabularyFromDatabase() {
+        String motherTongue = PreferenceHelper.getSelectedMotherTongue(this);
+        LearningRepository.getInstance(this).getAllVocabularyLiveData().observe(this, list -> {
+            vocabularyList.clear();
+            if (list != null && !list.isEmpty()) {
+                vocabularyList.addAll(list);
+                currentIndex = 0;
+                cardMain.setVisibility(View.VISIBLE);
+                flashcardControls.setVisibility(View.VISIBLE);
+                if (layoutEmptyFlashcards != null) layoutEmptyFlashcards.setVisibility(View.GONE);
+                displayCard();
+            } else {
+                // Empty state when database has zero preloaded vocabulary
+                cardMain.setVisibility(View.GONE);
+                flashcardControls.setVisibility(View.GONE);
+                if (layoutEmptyFlashcards != null) layoutEmptyFlashcards.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     private void displayCard() {
-        if (flashcards == null || flashcards.isEmpty()) return;
+        if (vocabularyList.isEmpty() || currentIndex >= vocabularyList.size()) {
+            cardMain.setVisibility(View.GONE);
+            flashcardControls.setVisibility(View.GONE);
+            if (layoutEmptyFlashcards != null) layoutEmptyFlashcards.setVisibility(View.VISIBLE);
+            return;
+        }
 
-        FlashcardItem card = flashcards.get(currentIndex);
-        ivVisual.setImageResource(card.imageResId);
-        tvHindi.setText(card.hindiWord);
-        tvTransliteration.setText(card.transliteration);
-        tvEnglish.setText(card.englishWord);
-        tvMotherTongue.setText(card.santhaliWord);
+        VocabularyEntity card = vocabularyList.get(currentIndex);
+        ivVisual.setImageResource(R.drawable.ic_language);
+        tvHindi.setText(card.word != null ? card.word : "");
+        tvTransliteration.setText(card.transliteration != null ? card.transliteration : "");
+        tvEnglish.setText(card.meaning != null ? card.meaning : "");
+        tvMotherTongue.setText(card.meaning != null ? card.meaning : "");
         tvMotherTongue.setVisibility(isTranslationRevealed ? View.VISIBLE : View.INVISIBLE);
         tvTapHint.setText(getString(R.string.tap_to_reveal));
-        tvCardCounter.setText((currentIndex + 1) + " / " + flashcards.size());
+        tvCardCounter.setText((currentIndex + 1) + " / " + vocabularyList.size());
     }
 }

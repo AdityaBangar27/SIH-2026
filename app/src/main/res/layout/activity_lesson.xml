@@ -41,6 +41,7 @@
     </LinearLayout>
 
     <ScrollView
+        android:id="@+id/scrollLessonContent"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
@@ -219,6 +220,49 @@
 
         </LinearLayout>
     </ScrollView>
+
+    <!-- Empty State View when no lessons exist -->
+    <LinearLayout
+        android:id="@+id/layoutEmptyLessons"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/lessonBottomNav"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lessonTopBar">
+
+        <ImageView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:contentDescription="No lessons"
+            android:src="@drawable/ic_lessons"
+            app:tint="?attr/customTextSecondaryColor" />
+
+        <TextView
+            android:id="@+id/tvEmptyLessonsTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:text="@string/empty_lessons_title"
+            android:textColor="?attr/customTextColor"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvEmptyLessonsDesc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="@string/empty_lessons_desc"
+            android:textColor="?attr/customTextSecondaryColor"
+            android:textSize="13sp" />
+    </LinearLayout>
 
     <!-- Return to Lessons Footer -->
     <LinearLayout

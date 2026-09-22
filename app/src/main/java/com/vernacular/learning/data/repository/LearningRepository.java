@@ -1,25 +1,40 @@
 package com.vernacular.learning.data.repository;
 
 import android.content.Context;
-import com.vernacular.learning.R;
+import androidx.lifecycle.LiveData;
 import com.vernacular.learning.data.local.AppDatabase;
+import com.vernacular.learning.data.local.entities.ActivityEntity;
+import com.vernacular.learning.data.local.entities.AppSettingEntity;
+import com.vernacular.learning.data.local.entities.AssessmentQuestionEntity;
 import com.vernacular.learning.data.local.entities.DownloadItemEntity;
+import com.vernacular.learning.data.local.entities.LanguageEntity;
 import com.vernacular.learning.data.local.entities.LessonEntity;
-import com.vernacular.learning.data.models.FlashcardItem;
-import com.vernacular.learning.data.models.MaterialItem;
-import com.vernacular.learning.data.models.WorksheetItem;
-
-import java.util.ArrayList;
+import com.vernacular.learning.data.local.entities.MediaReferenceEntity;
+import com.vernacular.learning.data.local.entities.SyncMetadataEntity;
+import com.vernacular.learning.data.local.entities.VerifiedTranslationEntity;
+import com.vernacular.learning.data.local.entities.VocabularyEntity;
+import com.vernacular.learning.data.local.entities.WorksheetEntity;
 import java.util.List;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 
+/**
+ * Main application repository managing local offline educational data.
+ * Adheres strictly to the zero-sample-data requirement: no records are seeded automatically.
+ * Database operations are safely executed on background worker threads.
+ */
 public class LearningRepository {
     private static volatile LearningRepository INSTANCE;
     private final AppDatabase database;
+    private final ExecutorService executor;
+
+    public interface Callback<T> {
+        void onComplete(T result);
+    }
 
     private LearningRepository(Context context) {
         database = AppDatabase.getInstance(context);
-        seedInitialDataIfEmpty();
+        executor = AppDatabase.databaseWriteExecutor;
+        // Zero sample data: database begins completely empty on first installation.
     }
 
     public static LearningRepository getInstance(Context context) {
@@ -33,58 +48,261 @@ public class LearningRepository {
         return INSTANCE;
     }
 
-    private void seedInitialDataIfEmpty() {
-        Executors.newSingleThreadExecutor().execute(() -> {
-            if (database.downloadDao().getCount() == 0) {
-                List<DownloadItemEntity> downloads = new ArrayList<>();
-                downloads.add(new DownloadItemEntity("Lesson Packages", "120 MB", 120 * 1024 * 1024L, "LessonPackages", "NOT_DOWNLOADED", 0));
-                downloads.add(new DownloadItemEntity("Translation Models", "250 MB", 250 * 1024 * 1024L, "TranslationModels", "NOT_DOWNLOADED", 0));
-                downloads.add(new DownloadItemEntity("Audio Files", "180 MB", 180 * 1024 * 1024L, "AudioFiles", "NOT_DOWNLOADED", 0));
-                downloads.add(new DownloadItemEntity("Images & Resources", "95 MB", 95 * 1024 * 1024L, "Images", "NOT_DOWNLOADED", 0));
-                database.downloadDao().insertAll(downloads);
-            }
+    public AppDatabase getDatabase() {
+        return database;
+    }
 
-            if (database.lessonDao().getCount() == 0) {
-                List<LessonEntity> lessons = new ArrayList<>();
-                lessons.add(new LessonEntity(
-                        "Class 1", "Mathematics", "1", "Numbers and Counting",
-                        "एक, दो, तीन", "ᱮᱠ, ᱫᱳ, ᱛᱤᱱ (ᱢᱤᱫ, ᱵᱟᱨ, ᱯᱮ)", "Santhali (ᱥᱟᱱᱛᱟᱲᱤ)",
-                        "Let's count the objects. Count and say aloud.", "apples_3", 1, 5
-                ));
-                lessons.add(new LessonEntity(
-                        "Class 1", "Mathematics", "1", "Numbers and Counting",
-                        "चार, पाँच, छह", "ᱪᱟᱨ, ᱯᱟᱺᱪ, ᱪᱷᱚ (ᱯᱩᱱ, ᱢᱚᱬᱮ, ᱛᱩᱨᱩᱭ)", "Santhali (ᱥᱟᱱᱛᱟᱲᱤ)",
-                        "Count the next set of objects together.", "apples_3", 2, 5
-                ));
-                database.lessonDao().insertAll(lessons);
-            }
+    // ==========================================
+    // A. LESSONS
+    // ==========================================
+    public void getLessons(String className, String subject, String languageId, Callback<List<LessonEntity>> callback) {
+        executor.execute(() -> {
+            List<LessonEntity> lessons = database.lessonDao().getLessons(className, subject, languageId);
+            if (callback != null) callback.onComplete(lessons);
         });
     }
 
-    public List<FlashcardItem> getSampleFlashcards() {
-        List<FlashcardItem> cards = new ArrayList<>();
-        cards.add(new FlashcardItem(R.drawable.ic_apple_single, "सेब", "(Seb)", "Apple", "ᱟᱯᱮᱞ (Apel)", "सेब (Seb)", "सेब (Seb)"));
-        cards.add(new FlashcardItem(R.drawable.ic_leaf_logo, "पेड़ / पत्ता", "(Patta)", "Leaf / Tree", "ᱥᱟᱠᱟᱢ (Sakam)", "सकाम (Sakam)", "साकाम (Sakam)"));
-        cards.add(new FlashcardItem(R.drawable.ic_apples_three, "गिनती (१, २, ३)", "(Ginti)", "Counting", "ᱢᱤᱫ, ᱵᱟᱨ, ᱯᱮ", "मियाद, बारिया, आपी", "मियद, बारिया, आपे"));
-        cards.add(new FlashcardItem(R.drawable.ic_school_kids, "विद्यार्थी / स्कूल", "(Vidyarthi)", "Student / School", "ᱯᱟᱹᱴᱷᱩᱣᱟᱹ (Pathuwa)", "पठुआ (Pathua)", "इतुन (Itun)"));
-        return cards;
+    public LiveData<List<LessonEntity>> getLessonsLiveData(String className, String subject, String languageId) {
+        return database.lessonDao().getLessonsLiveData(className, subject, languageId);
     }
 
-    public List<WorksheetItem> getSampleWorksheets() {
-        List<WorksheetItem> list = new ArrayList<>();
-        list.add(new WorksheetItem(1, "Numbers 1–10", "Class 1 • Mathematics", R.drawable.ic_apples_three, null, false));
-        list.add(new WorksheetItem(2, "Addition Practice", "Class 1 • Mathematics", 0, "2 + 3 = ?", false));
-        list.add(new WorksheetItem(3, "Shapes & Objects", "Class 1 • Mathematics", R.drawable.ic_leaf_logo, null, true));
-        return list;
+    public void insertLesson(LessonEntity lesson) {
+        executor.execute(() -> database.lessonDao().insert(lesson));
     }
 
-    public List<MaterialItem> getSampleMaterials() {
-        List<MaterialItem> list = new ArrayList<>();
-        list.add(new MaterialItem(1, "Numbers and Counting Package", "Class 1 • Mathematics • Santhali", "Mathematics", R.drawable.ic_lessons, true));
-        list.add(new MaterialItem(2, "Addition and Subtraction Worksheets", "Class 1 • Mathematics • Bilingual", "Mathematics", R.drawable.ic_worksheet_quick, false));
-        list.add(new MaterialItem(3, "Vernacular Alphabet & Phonetics", "Class 1 • Languages • Mundari & Ho", "Languages", R.drawable.ic_language, true));
-        list.add(new MaterialItem(4, "Our Environment & Nature Around Us", "Class 1 • EVS • Santhali & Hindi", "Science", R.drawable.ic_leaf_logo, false));
-        list.add(new MaterialItem(5, "Animal & Bird Vocabulary Cards", "Class 2 • Languages • Ho", "Languages", R.drawable.ic_voice_quick, true));
-        return list;
+    public void insertLessons(List<LessonEntity> lessons) {
+        executor.execute(() -> database.lessonDao().insertAll(lessons));
+    }
+
+    public void deleteLesson(LessonEntity lesson) {
+        executor.execute(() -> database.lessonDao().delete(lesson));
+    }
+
+    public void getLessonCount(Callback<Integer> callback) {
+        executor.execute(() -> {
+            int count = database.lessonDao().getCount();
+            if (callback != null) callback.onComplete(count);
+        });
+    }
+
+    // ==========================================
+    // B. LANGUAGES
+    // ==========================================
+    public void getAllLanguages(Callback<List<LanguageEntity>> callback) {
+        executor.execute(() -> {
+            List<LanguageEntity> languages = database.languageDao().getAllLanguages();
+            if (callback != null) callback.onComplete(languages);
+        });
+    }
+
+    public LiveData<List<LanguageEntity>> getAllLanguagesLiveData() {
+        return database.languageDao().getAllLanguagesLiveData();
+    }
+
+    public void insertLanguage(LanguageEntity language) {
+        executor.execute(() -> database.languageDao().insert(language));
+    }
+
+    public void insertLanguages(List<LanguageEntity> languages) {
+        executor.execute(() -> database.languageDao().insertAll(languages));
+    }
+
+    // ==========================================
+    // C. VERIFIED TRANSLATIONS
+    // ==========================================
+    public void getTranslations(String sourceLangId, String targetLangId, Callback<List<VerifiedTranslationEntity>> callback) {
+        executor.execute(() -> {
+            List<VerifiedTranslationEntity> list = database.verifiedTranslationDao().getTranslations(sourceLangId, targetLangId);
+            if (callback != null) callback.onComplete(list);
+        });
+    }
+
+    public LiveData<List<VerifiedTranslationEntity>> getTranslationsLiveData(String sourceLangId, String targetLangId) {
+        return database.verifiedTranslationDao().getTranslationsLiveData(sourceLangId, targetLangId);
+    }
+
+    public void insertTranslation(VerifiedTranslationEntity translation) {
+        executor.execute(() -> database.verifiedTranslationDao().insert(translation));
+    }
+
+    public void insertTranslations(List<VerifiedTranslationEntity> translations) {
+        executor.execute(() -> database.verifiedTranslationDao().insertAll(translations));
+    }
+
+    // ==========================================
+    // D. VOCABULARY
+    // ==========================================
+    public void getAllVocabulary(Callback<List<VocabularyEntity>> callback) {
+        executor.execute(() -> {
+            List<VocabularyEntity> list = database.vocabularyDao().getAllVocabulary();
+            if (callback != null) callback.onComplete(list);
+        });
+    }
+
+    public LiveData<List<VocabularyEntity>> getAllVocabularyLiveData() {
+        return database.vocabularyDao().getAllVocabularyLiveData();
+    }
+
+    public void getVocabularyByLanguage(String languageId, Callback<List<VocabularyEntity>> callback) {
+        executor.execute(() -> {
+            List<VocabularyEntity> list = database.vocabularyDao().getVocabularyByLanguage(languageId);
+            if (callback != null) callback.onComplete(list);
+        });
+    }
+
+    public LiveData<List<VocabularyEntity>> getVocabularyByLanguageLiveData(String languageId) {
+        return database.vocabularyDao().getVocabularyByLanguageLiveData(languageId);
+    }
+
+    public void getVocabularyForLesson(String lessonId, Callback<List<VocabularyEntity>> callback) {
+        executor.execute(() -> {
+            List<VocabularyEntity> list = database.vocabularyDao().getVocabularyForLesson(lessonId);
+            if (callback != null) callback.onComplete(list);
+        });
+    }
+
+    public void insertVocabulary(VocabularyEntity item) {
+        executor.execute(() -> database.vocabularyDao().insert(item));
+    }
+
+    public void insertVocabularyList(List<VocabularyEntity> items) {
+        executor.execute(() -> database.vocabularyDao().insertAll(items));
+    }
+
+    // ==========================================
+    // E. ACTIVITIES
+    // ==========================================
+    public void getActivitiesForLesson(String lessonId, Callback<List<ActivityEntity>> callback) {
+        executor.execute(() -> {
+            List<ActivityEntity> list = database.activityDao().getActivitiesForLesson(lessonId);
+            if (callback != null) callback.onComplete(list);
+        });
+    }
+
+    public LiveData<List<ActivityEntity>> getActivitiesForLessonLiveData(String lessonId) {
+        return database.activityDao().getActivitiesForLessonLiveData(lessonId);
+    }
+
+    public void insertActivity(ActivityEntity activity) {
+        executor.execute(() -> database.activityDao().insert(activity));
+    }
+
+    // ==========================================
+    // F. ASSESSMENT QUESTIONS
+    // ==========================================
+    public void getQuestionsForLesson(String lessonId, Callback<List<AssessmentQuestionEntity>> callback) {
+        executor.execute(() -> {
+            List<AssessmentQuestionEntity> list = database.assessmentQuestionDao().getQuestionsForLesson(lessonId);
+            if (callback != null) callback.onComplete(list);
+        });
+    }
+
+    public LiveData<List<AssessmentQuestionEntity>> getQuestionsForLessonLiveData(String lessonId) {
+        return database.assessmentQuestionDao().getQuestionsForLessonLiveData(lessonId);
+    }
+
+    public void insertQuestion(AssessmentQuestionEntity question) {
+        executor.execute(() -> database.assessmentQuestionDao().insert(question));
+    }
+
+    // ==========================================
+    // G. MEDIA REFERENCES
+    // ==========================================
+    public void getMediaForEntity(String entityId, Callback<List<MediaReferenceEntity>> callback) {
+        executor.execute(() -> {
+            List<MediaReferenceEntity> list = database.mediaReferenceDao().getMediaForEntity(entityId);
+            if (callback != null) callback.onComplete(list);
+        });
+    }
+
+    public LiveData<List<MediaReferenceEntity>> getDownloadedMediaLiveData() {
+        return database.mediaReferenceDao().getDownloadedMediaLiveData();
+    }
+
+    public void insertMedia(MediaReferenceEntity media) {
+        executor.execute(() -> database.mediaReferenceDao().insert(media));
+    }
+
+    // ==========================================
+    // H. WORKSHEETS
+    // ==========================================
+    public void getAllWorksheets(Callback<List<WorksheetEntity>> callback) {
+        executor.execute(() -> {
+            List<WorksheetEntity> list = database.worksheetDao().getAllWorksheets();
+            if (callback != null) callback.onComplete(list);
+        });
+    }
+
+    public LiveData<List<WorksheetEntity>> getAllWorksheetsLiveData() {
+        return database.worksheetDao().getAllWorksheetsLiveData();
+    }
+
+    public void getWorksheetsByClassAndSubject(String className, String subject, Callback<List<WorksheetEntity>> callback) {
+        executor.execute(() -> {
+            List<WorksheetEntity> list = database.worksheetDao().getWorksheetsByClassAndSubject(className, subject);
+            if (callback != null) callback.onComplete(list);
+        });
+    }
+
+    public void insertWorksheet(WorksheetEntity worksheet) {
+        executor.execute(() -> database.worksheetDao().insert(worksheet));
+    }
+
+    public void insertWorksheets(List<WorksheetEntity> worksheets) {
+        executor.execute(() -> database.worksheetDao().insertAll(worksheets));
+    }
+
+    // ==========================================
+    // I. APPLICATION SETTINGS
+    // ==========================================
+    public void getSetting(String key, Callback<String> callback) {
+        executor.execute(() -> {
+            String val = database.appSettingDao().getSetting(key);
+            if (callback != null) callback.onComplete(val);
+        });
+    }
+
+    public LiveData<String> getSettingLiveData(String key) {
+        return database.appSettingDao().getSettingLiveData(key);
+    }
+
+    public void saveSetting(String key, String value) {
+        executor.execute(() -> database.appSettingDao().setSetting(new AppSettingEntity(key, value, System.currentTimeMillis())));
+    }
+
+    // ==========================================
+    // J. SYNCHRONIZATION METADATA
+    // ==========================================
+    public void getSyncMetadata(String contentType, String contentId, Callback<SyncMetadataEntity> callback) {
+        executor.execute(() -> {
+            SyncMetadataEntity meta = database.syncMetadataDao().getMetadata(contentType, contentId);
+            if (callback != null) callback.onComplete(meta);
+        });
+    }
+
+    public void saveSyncMetadata(SyncMetadataEntity metadata) {
+        executor.execute(() -> database.syncMetadataDao().insertOrUpdate(metadata));
+    }
+
+    // ==========================================
+    // DOWNLOAD PACKAGES (App Packages)
+    // ==========================================
+    public void getAllDownloads(Callback<List<DownloadItemEntity>> callback) {
+        executor.execute(() -> {
+            List<DownloadItemEntity> list = database.downloadDao().getAllDownloads();
+            if (callback != null) callback.onComplete(list);
+        });
+    }
+
+    public LiveData<List<DownloadItemEntity>> getAllDownloadsLiveData() {
+        return database.downloadDao().getAllDownloadsLiveData();
+    }
+
+    public void insertDownloadItem(DownloadItemEntity item) {
+        executor.execute(() -> database.downloadDao().insert(item));
+    }
+
+    public void updateDownloadProgress(int id, String status, int progress) {
+        executor.execute(() -> database.downloadDao().updateProgress(id, status, progress));
     }
 }

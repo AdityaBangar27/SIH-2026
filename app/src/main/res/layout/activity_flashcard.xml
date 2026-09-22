@@ -198,4 +198,45 @@
 
     </LinearLayout>
 
+    <!-- Empty State View when no flashcards exist -->
+    <LinearLayout
+        android:id="@+id/layoutEmptyFlashcards"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/flashcardTopBar">
+
+        <ImageView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:contentDescription="No flashcards"
+            android:src="@drawable/ic_language"
+            app:tint="?attr/customTextSecondaryColor" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:text="@string/empty_flashcards_title"
+            android:textColor="?attr/customTextColor"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="@string/empty_flashcards_desc"
+            android:textColor="?attr/customTextSecondaryColor"
+            android:textSize="13sp" />
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

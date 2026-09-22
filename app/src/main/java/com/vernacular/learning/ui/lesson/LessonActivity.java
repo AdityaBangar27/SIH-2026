@@ -1,17 +1,26 @@
 package com.vernacular.learning.ui.lesson;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.vernacular.learning.R;
+import com.vernacular.learning.data.local.entities.LessonEntity;
+import com.vernacular.learning.data.repository.LearningRepository;
 import com.vernacular.learning.utils.AudioHelper;
+import com.vernacular.learning.utils.PreferenceHelper;
+import com.vernacular.learning.utils.ThemeHelper;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LessonActivity extends AppCompatActivity {
-    private int currentStep = 1;
-    private final int totalSteps = 5;
+    private int currentStepIndex = 0;
+    private final List<LessonEntity> lessonList = new ArrayList<>();
 
     private TextView tvLessonSubjectHeader;
     private TextView tvLessonChapter;
@@ -20,29 +29,48 @@ public class LessonActivity extends AppCompatActivity {
     private TextView tvLessonHindi;
     private TextView tvLessonVernacular;
     private TextView tvLessonInstruction;
+    private ImageView ivLessonVisual;
     private MaterialButton btnPrevious;
     private MaterialButton btnNext;
+    private ScrollView scrollLessonContent;
+    private LinearLayout layoutEmptyLessons;
 
+    private String currentClassName = "Class 1";
+    private String currentSubjectName = "Mathematics";
     private String selectedMotherTongue = "Santhali (ᱥᱟᱱᱛᱟᱲᱤ)";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        com.vernacular.learning.utils.ThemeHelper.applyTheme(this);
+        ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lesson);
 
         String className = getIntent().getStringExtra("CLASS_NAME");
-        String subjectName = getIntent().getStringExtra("SUBJECT_NAME");
-        String motherTongue = getIntent().getStringExtra("MOTHER_TONGUE");
-        if (motherTongue != null) {
-            selectedMotherTongue = motherTongue;
+        if (className != null && !className.isEmpty()) {
+            currentClassName = className;
+        } else {
+            currentClassName = PreferenceHelper.getSelectedClass(this);
         }
 
-        initViews(className, subjectName);
-        updateLessonContent();
+        String subjectName = getIntent().getStringExtra("SUBJECT_NAME");
+        if (subjectName != null && !subjectName.isEmpty()) {
+            currentSubjectName = subjectName;
+        } else {
+            currentSubjectName = PreferenceHelper.getSelectedSubject(this);
+        }
+
+        String motherTongue = getIntent().getStringExtra("MOTHER_TONGUE");
+        if (motherTongue != null && !motherTongue.isEmpty()) {
+            selectedMotherTongue = motherTongue;
+        } else {
+            selectedMotherTongue = PreferenceHelper.getSelectedMotherTongue(this);
+        }
+
+        initViews();
+        loadLessonsFromDatabase();
     }
 
-    private void initViews(String className, String subjectName) {
+    private void initViews() {
         ImageView btnBack = findViewById(R.id.btnLessonBack);
         tvLessonSubjectHeader = findViewById(R.id.tvLessonSubjectHeader);
         tvLessonChapter = findViewById(R.id.tvLessonChapter);
@@ -51,29 +79,30 @@ public class LessonActivity extends AppCompatActivity {
         tvLessonHindi = findViewById(R.id.tvLessonHindi);
         tvLessonVernacular = findViewById(R.id.tvLessonVernacular);
         tvLessonInstruction = findViewById(R.id.tvLessonInstruction);
+        ivLessonVisual = findViewById(R.id.ivLessonVisual);
         MaterialCardView btnPlayAudio = findViewById(R.id.btnPlayLessonAudio);
         btnPrevious = findViewById(R.id.btnPreviousLesson);
         btnNext = findViewById(R.id.btnNextLesson);
         TextView tvBackToLessons = findViewById(R.id.tvBackToLessons);
+        scrollLessonContent = findViewById(R.id.scrollLessonContent);
+        layoutEmptyLessons = findViewById(R.id.layoutEmptyLessons);
 
-        if (className != null && subjectName != null) {
-            tvLessonSubjectHeader.setText(subjectName + " - " + className);
-        }
+        tvLessonSubjectHeader.setText(currentSubjectName + " - " + currentClassName);
 
         btnBack.setOnClickListener(v -> finish());
         tvBackToLessons.setOnClickListener(v -> finish());
 
         btnPrevious.setOnClickListener(v -> {
-            if (currentStep > 1) {
-                currentStep--;
-                updateLessonContent();
+            if (currentStepIndex > 0) {
+                currentStepIndex--;
+                displayCurrentLesson();
             }
         });
 
         btnNext.setOnClickListener(v -> {
-            if (currentStep < totalSteps) {
-                currentStep++;
-                updateLessonContent();
+            if (currentStepIndex < lessonList.size() - 1) {
+                currentStepIndex++;
+                displayCurrentLesson();
             } else {
                 finish();
             }
@@ -85,72 +114,66 @@ public class LessonActivity extends AppCompatActivity {
         });
     }
 
-    private void updateLessonContent() {
-        tvLessonProgressBadge.setText("Lesson " + currentStep + "/" + totalSteps);
-
-        if (currentStep == 1) {
-            tvLessonChapter.setText("1. Numbers and Counting");
-            tvLessonNumbers.setText("1   2   3");
-            tvLessonHindi.setText("एक, दो, तीन");
-            if (selectedMotherTongue.contains("Mundari")) {
-                tvLessonVernacular.setText("मियाद, बारिया, आपी (ᱢᱤᱭᱟᱫᱽ, ᱵᱟᱨᱤᱭᱟ, ᱟᱯᱤ)");
-            } else if (selectedMotherTongue.contains("Ho")) {
-                tvLessonVernacular.setText("मियद, बारिया, आपे (ᱢᱤᱭᱟᱫᱽ, ᱵᱟᱨᱤᱭᱟ, ᱟᱯᱮ)");
+    private void loadLessonsFromDatabase() {
+        LearningRepository.getInstance(this).getLessonsLiveData(
+                currentClassName, currentSubjectName, selectedMotherTongue
+        ).observe(this, lessons -> {
+            lessonList.clear();
+            if (lessons != null && !lessons.isEmpty()) {
+                lessonList.addAll(lessons);
+                currentStepIndex = 0;
+                scrollLessonContent.setVisibility(View.VISIBLE);
+                layoutEmptyLessons.setVisibility(View.GONE);
+                displayCurrentLesson();
             } else {
-                tvLessonVernacular.setText("ᱮᱠ, ᱫᱳ, ᱛᱤᱱ (ᱢᱤᱫ, ᱵᱟᱨ, ᱯᱮ)");
+                // Display empty state cleanly without throwing an error
+                scrollLessonContent.setVisibility(View.GONE);
+                layoutEmptyLessons.setVisibility(View.VISIBLE);
             }
-            tvLessonInstruction.setText("Let's count the objects. Count and say aloud.");
+        });
+    }
+
+    private void displayCurrentLesson() {
+        if (lessonList.isEmpty()) {
+            scrollLessonContent.setVisibility(View.GONE);
+            layoutEmptyLessons.setVisibility(View.VISIBLE);
+            return;
+        }
+
+        LessonEntity current = lessonList.get(currentStepIndex);
+        int total = lessonList.size();
+        tvLessonProgressBadge.setText("Lesson " + (currentStepIndex + 1) + "/" + total);
+
+        String chapterStr = (current.chapterNumber != null && !current.chapterNumber.isEmpty()) ?
+                current.chapterNumber + ". " + (current.title != null ? current.title : "") :
+                (current.title != null ? current.title : "");
+        tvLessonChapter.setText(chapterStr);
+
+        tvLessonHindi.setText(current.hindiContent != null ? current.hindiContent : "");
+        tvLessonVernacular.setText(current.motherTongueContent != null ? current.motherTongueContent : "");
+        tvLessonInstruction.setText(current.instruction != null ? current.instruction : "");
+
+        if (current.contentReference != null && !current.contentReference.isEmpty()) {
+            tvLessonNumbers.setText(current.contentReference);
+            tvLessonNumbers.setVisibility(View.VISIBLE);
+        } else {
+            tvLessonNumbers.setVisibility(View.GONE);
+        }
+
+        // Previous button state
+        if (currentStepIndex == 0) {
             btnPrevious.setEnabled(false);
             btnPrevious.setAlpha(0.5f);
-            btnNext.setText(R.string.btn_next);
-        } else if (currentStep == 2) {
-            tvLessonChapter.setText("1. Numbers and Counting");
-            tvLessonNumbers.setText("4   5   6");
-            tvLessonHindi.setText("चार, पाँच, छह");
-            if (selectedMotherTongue.contains("Mundari")) {
-                tvLessonVernacular.setText("उपोनिया, मोड़ेया, तुरूइया");
-            } else if (selectedMotherTongue.contains("Ho")) {
-                tvLessonVernacular.setText("उपुन, मोड़े, तुरूय");
-            } else {
-                tvLessonVernacular.setText("ᱯᱩᱱ, ᱢᱚᱬᱮ, ᱛᱩᱨᱩᱭ (Pun, Mone, Turuy)");
-            }
-            tvLessonInstruction.setText("Great job! Now count four, five, and six.");
-            btnPrevious.setEnabled(true);
-            btnPrevious.setAlpha(1.0f);
-            btnNext.setText(R.string.btn_next);
-        } else if (currentStep == 3) {
-            tvLessonChapter.setText("1. Numbers and Counting");
-            tvLessonNumbers.setText("7   8   9   10");
-            tvLessonHindi.setText("सात, आठ, नौ, दस");
-            if (selectedMotherTongue.contains("Mundari")) {
-                tvLessonVernacular.setText("एरेया, इरलिया, आरेया, गेलिया");
-            } else if (selectedMotherTongue.contains("Ho")) {
-                tvLessonVernacular.setText("ऐया, इरल, आरे, गेल");
-            } else {
-                tvLessonVernacular.setText("ᱮᱭᱟᱭ, ᱤᱨᱟᱹᱞ, ᱟᱨᱮ, ᱜᱮᱞ (Eyay, Iral, Are, Gel)");
-            }
-            tvLessonInstruction.setText("Keep going! Count all the way up to ten.");
-            btnPrevious.setEnabled(true);
-            btnPrevious.setAlpha(1.0f);
-            btnNext.setText(R.string.btn_next);
-        } else if (currentStep == 4) {
-            tvLessonChapter.setText("2. Addition Fundamentals");
-            tvLessonNumbers.setText("1 + 2 = 3");
-            tvLessonHindi.setText("एक और दो मिलकर तीन");
-            tvLessonVernacular.setText("ᱢᱤᱫ ᱟᱨ ᱵᱟᱨ ᱢᱮᱥᱟ ᱠᱟᱛᱮ ᱯᱮ");
-            tvLessonInstruction.setText("Combining objects together makes addition!");
-            btnPrevious.setEnabled(true);
-            btnPrevious.setAlpha(1.0f);
-            btnNext.setText(R.string.btn_next);
         } else {
-            tvLessonChapter.setText("3. Review & Mastery");
-            tvLessonNumbers.setText("✓ 1 to 10");
-            tvLessonHindi.setText("शाबाश! आपने पाठ पूरा किया।");
-            tvLessonVernacular.setText("ᱟᱹᱰᱤ ᱱᱟᱯᱟᱭ! ᱯᱟᱲᱦᱟᱣ ᱢᱩᱪᱟᱹᱫ ᱮᱱᱟ।");
-            tvLessonInstruction.setText("You have mastered counting in your mother tongue!");
             btnPrevious.setEnabled(true);
             btnPrevious.setAlpha(1.0f);
-            btnNext.setText("Complete Lesson ✓");
+        }
+
+        // Next button state
+        if (currentStepIndex == total - 1) {
+            btnNext.setText(R.string.downloaded_success_banner);
+        } else {
+            btnNext.setText(R.string.btn_next);
         }
     }
 }

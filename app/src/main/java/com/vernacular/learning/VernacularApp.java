@@ -12,7 +12,7 @@ public class VernacularApp extends Application {
         // 1. Immediately apply saved theme (Light, Dark, or System)
         ThemeHelper.applyTheme(this);
 
-        // 2. Initialize local Room database & seed data
+        // 2. Initialize local Room database (starts empty on first install)
         LearningRepository.getInstance(this);
 
         // 3. Initialize audio pronunciation helper

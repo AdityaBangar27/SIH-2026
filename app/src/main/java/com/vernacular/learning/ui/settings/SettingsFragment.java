@@ -16,6 +16,7 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.vernacular.learning.R;
 import com.vernacular.learning.ui.about.AboutActivity;
 import com.vernacular.learning.ui.downloads.DownloadContentActivity;
+import com.vernacular.learning.data.repository.LearningRepository;
 import com.vernacular.learning.utils.PreferenceHelper;
 import com.vernacular.learning.utils.ThemeHelper;
 
@@ -42,6 +43,9 @@ public class SettingsFragment extends Fragment {
             switchSettingTheme.setOnClickListener(v -> {
                 boolean nextState = switchSettingTheme.isChecked();
                 ThemeHelper.setDarkMode(requireContext(), nextState);
+                LearningRepository.getInstance(requireContext()).saveSetting(
+                        ThemeHelper.KEY_THEME, nextState ? ThemeHelper.THEME_DARK : ThemeHelper.THEME_LIGHT
+                );
                 Toast.makeText(requireContext(),
                         nextState ? "Dark mode enabled" : "Light mode enabled",
                         Toast.LENGTH_SHORT).show();
@@ -114,6 +118,9 @@ public class SettingsFragment extends Fragment {
                             PreferenceHelper.getSelectedClass(requireContext()),
                             PreferenceHelper.getSelectedSubject(requireContext()),
                             selected
+                    );
+                    LearningRepository.getInstance(requireContext()).saveSetting(
+                            "selected_mother_tongue", selected
                     );
                     Toast.makeText(requireContext(), "Mother Tongue set to: " + selected, Toast.LENGTH_SHORT).show();
                     dialog.dismiss();

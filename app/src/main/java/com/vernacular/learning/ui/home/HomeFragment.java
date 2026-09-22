@@ -117,6 +117,9 @@ public class HomeFragment extends Fragment {
                             PreferenceHelper.getSelectedSubject(requireContext()),
                             currentMotherTongue
                     );
+                    com.vernacular.learning.data.repository.LearningRepository.getInstance(requireContext()).saveSetting(
+                            "selected_mother_tongue", currentMotherTongue
+                    );
                     updateLanguagePairDisplay();
                     Toast.makeText(requireContext(), "Active language pair updated!", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();

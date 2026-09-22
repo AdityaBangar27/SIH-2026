@@ -107,6 +107,42 @@
                 android:nestedScrollingEnabled="false"
                 tools:listitem="@layout/item_download_row" />
 
+            <!-- Empty State View when no downloads exist -->
+            <LinearLayout
+                android:id="@+id/layoutEmptyDownloads"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="32dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:contentDescription="No downloads"
+                    android:src="@drawable/ic_download"
+                    app:tint="?attr/customTextSecondaryColor" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/empty_downloads_title"
+                    android:textColor="?attr/customTextColor"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:gravity="center"
+                    android:text="@string/empty_downloads_desc"
+                    android:textColor="?attr/customTextSecondaryColor"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
         </LinearLayout>
     </ScrollView>
 

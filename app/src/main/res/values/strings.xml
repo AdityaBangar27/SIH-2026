@@ -159,4 +159,14 @@
     <string name="app_version">Version 1.0.0</string>
     <string name="developed_for">Developed for SIH 2026</string>
     <string name="jharkhand_initiatives">Initiative for Tribal &amp; Regional Languages</string>
+
+    <!-- Empty States -->
+    <string name="empty_lessons_title">No Lessons Available Offline</string>
+    <string name="empty_lessons_desc">No local lessons found for this class and subject. Download lesson packages to study offline.</string>
+    <string name="empty_worksheets_title">No Worksheets Available Offline</string>
+    <string name="empty_worksheets_desc">No offline worksheets stored yet. Downloaded worksheets will appear here.</string>
+    <string name="empty_flashcards_title">No Flashcards Available</string>
+    <string name="empty_flashcards_desc">No vocabulary flashcards found offline. Vocabulary items will appear here when added.</string>
+    <string name="empty_downloads_title">No Download Packages</string>
+    <string name="empty_downloads_desc">Downloadable packages will be listed here when available.</string>
 </resources>

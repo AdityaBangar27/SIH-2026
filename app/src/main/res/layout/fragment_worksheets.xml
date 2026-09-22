@@ -6,33 +6,22 @@
     android:layout_height="match_parent"
     android:background="?attr/customBackgroundColor">
 
-    <!-- Top Bar -->
+    <!-- Top Bar (Back arrow removed, title preserved with styling) -->
     <LinearLayout
         android:id="@+id/worksheetsTopBar"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingHorizontal="16dp"
+        android:paddingHorizontal="20dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageView
-            android:id="@+id/btnWorksheetsBack"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Back"
-            android:padding="4dp"
-            android:src="@drawable/ic_arrow_back"
-            app:tint="?attr/customPrimaryColor" />
-
         <TextView
-            android:layout_width="0dp"
+            android:id="@+id/tvWorksheetsHeaderTitle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_weight="1"
             android:text="@string/worksheets_and_flashcards"
             android:textColor="?attr/customTextColor"
             android:textSize="18sp"
@@ -83,30 +72,267 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Worksheets Content List -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvWorksheets"
+    <!-- Content 1: Worksheets Area -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layoutWorksheetsContent"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="12dp"
-        android:clipToPadding="false"
-        android:paddingHorizontal="20dp"
-        android:paddingBottom="24dp"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tabContainer"
-        tools:listitem="@layout/item_worksheet_card" />
+        app:layout_constraintTop_toBottomOf="@+id/tabContainer">
 
-    <!-- Flashcards Container (Toggled via tab) -->
-    <FrameLayout
-        android:id="@+id/flashcardTabContainer"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvWorksheets"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingHorizontal="20dp"
+            android:paddingBottom="24dp"
+            tools:listitem="@layout/item_worksheet_card" />
+
+        <!-- Empty State View when no worksheets exist -->
+        <LinearLayout
+            android:id="@+id/layoutEmptyWorksheets"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:contentDescription="No worksheets"
+                android:src="@drawable/ic_worksheet_quick"
+                app:tint="?attr/customTextSecondaryColor" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="@string/empty_worksheets_title"
+                android:textColor="?attr/customTextColor"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center"
+                android:text="@string/empty_worksheets_desc"
+                android:textColor="?attr/customTextSecondaryColor"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Content 2: Flashcards Area -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layoutFlashcardsContent"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tabContainer" />
+        app:layout_constraintTop_toBottomOf="@+id/tabContainer">
+
+        <!-- Main Flashcard (Centered Large Card) -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardFlashcardMain"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginHorizontal="28dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardBackgroundColor="?attr/customCardColor"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="3dp"
+            app:layout_constraintBottom_toTopOf="@+id/flashcardControls"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:strokeColor="?attr/customBorderColor"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <ImageView
+                    android:id="@+id/ivFlashcardVisual"
+                    android:layout_width="140dp"
+                    android:layout_height="140dp"
+                    android:contentDescription="Flashcard illustration"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_language" />
+
+                <TextView
+                    android:id="@+id/tvFlashcardHindi"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/flashcard_hindi_word"
+                    android:textColor="?attr/customTextColor"
+                    android:textSize="26sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvFlashcardTransliteration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/flashcard_transliteration"
+                    android:textColor="?attr/customTextSecondaryColor"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvFlashcardEnglish"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/flashcard_english_word"
+                    android:textColor="?attr/customTextSecondaryColor"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvFlashcardMotherTongue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_pill_secondary"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="6dp"
+                    android:text="@string/flashcard_santhali_word"
+                    android:textColor="?attr/customPrimaryColor"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:visibility="invisible" />
+
+                <ImageView
+                    android:id="@+id/btnFlashcardAudio"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="12dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Play pronunciation"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_speaker"
+                    app:tint="?attr/customPrimaryColor" />
+
+                <TextView
+                    android:id="@+id/tvTapHint"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="@string/tap_to_reveal"
+                    android:textColor="?attr/customTextSecondaryColor"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Bottom Navigation Controls: <  1/10  > -->
+        <LinearLayout
+            android:id="@+id/flashcardControls"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_marginBottom="24dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <ImageView
+                android:id="@+id/btnPrevCard"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_pill_secondary"
+                android:clickable="true"
+                android:contentDescription="Previous Card"
+                android:focusable="true"
+                android:padding="8dp"
+                android:src="@drawable/ic_arrow_left"
+                app:tint="?attr/customPrimaryColor" />
+
+            <TextView
+                android:id="@+id/tvCardCounter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="24dp"
+                android:text="@string/flashcard_counter_sample"
+                android:textColor="?attr/customTextColor"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:id="@+id/btnNextCard"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_pill_secondary"
+                android:clickable="true"
+                android:contentDescription="Next Card"
+                android:focusable="true"
+                android:padding="8dp"
+                android:src="@drawable/ic_arrow_right"
+                app:tint="?attr/customPrimaryColor" />
+        </LinearLayout>
+
+        <!-- Empty State View when no flashcards exist -->
+        <LinearLayout
+            android:id="@+id/layoutEmptyFlashcards"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="32dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:contentDescription="No flashcards"
+                android:src="@drawable/ic_language"
+                app:tint="?attr/customTextSecondaryColor" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center"
+                android:text="@string/empty_flashcards_title"
+                android:textColor="?attr/customTextColor"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:text="@string/empty_flashcards_desc"
+                android:textColor="?attr/customTextSecondaryColor"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

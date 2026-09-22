@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.chip.ChipGroup;
 import com.vernacular.learning.R;
+import com.vernacular.learning.data.local.entities.WorksheetEntity;
 import com.vernacular.learning.data.models.MaterialItem;
 import com.vernacular.learning.data.repository.LearningRepository;
 import com.vernacular.learning.ui.lesson.LessonActivity;
@@ -40,8 +41,7 @@ public class MaterialsFragment extends Fragment {
         RecyclerView rvMaterials = root.findViewById(R.id.rvMaterials);
         layoutEmpty = root.findViewById(R.id.layoutEmptyMaterials);
 
-        allMaterials = LearningRepository.getInstance(requireContext()).getSampleMaterials();
-        filteredMaterials.addAll(allMaterials);
+        allMaterials = new ArrayList<>();
 
         rvMaterials.setLayoutManager(new LinearLayoutManager(requireContext()));
         adapter = new MaterialAdapter(filteredMaterials, item -> {
@@ -51,6 +51,31 @@ public class MaterialsFragment extends Fragment {
             startActivity(intent);
         });
         rvMaterials.setAdapter(adapter);
+
+        // Load stored materials/worksheets from Room
+        LearningRepository.getInstance(requireContext())
+                .getAllWorksheetsLiveData()
+                .observe(getViewLifecycleOwner(), worksheets -> {
+                    allMaterials.clear();
+                    if (worksheets != null) {
+                        int index = 1;
+                        for (WorksheetEntity ws : worksheets) {
+                            String category = ws.subject != null ? ws.subject : "Mathematics";
+                            String subtitle = (ws.className != null ? ws.className : "") +
+                                    (ws.subject != null ? " • " + ws.subject : "");
+                            boolean isDownloaded = "DOWNLOADED".equalsIgnoreCase(ws.downloadStatus);
+                            allMaterials.add(new MaterialItem(
+                                    index++,
+                                    ws.title != null ? ws.title : "Material",
+                                    subtitle,
+                                    category,
+                                    R.drawable.ic_worksheet_quick,
+                                    isDownloaded
+                            ));
+                        }
+                    }
+                    applyFilter();
+                });
 
         // Search text watcher
         etSearch.addTextChangedListener(new TextWatcher() {

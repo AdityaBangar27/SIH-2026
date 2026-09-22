@@ -1,40 +1,72 @@
 package com.vernacular.learning.data.local.entities;
 
+import androidx.annotation.NonNull;
 import androidx.room.Entity;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "lessons")
+/**
+ * Entity representing an educational lesson.
+ * Stores lesson content, structure, language metadata, versioning, and download status.
+ */
+@Entity(
+        tableName = "lessons",
+        indices = {
+                @Index(value = {"className", "subject", "languageId"}),
+                @Index(value = {"sequenceOrder"})
+        }
+)
 public class LessonEntity {
-    @PrimaryKey(autoGenerate = true)
-    public int id;
+    @PrimaryKey
+    @NonNull
+    public String lessonId;
 
     public String className;
     public String subject;
     public String chapterNumber;
-    public String chapterTitle;
+    public String title;
+    public String description;
+    public String contentReference;
     public String hindiContent;
     public String motherTongueContent;
+    public String languageId;
     public String motherTongue;
     public String instruction;
     public String visualType;
-    public int lessonIndex;
+    public int sequenceOrder;
     public int totalLessons;
+    public int contentVersion;
+    public long createdAt;
+    public long updatedAt;
+    public String downloadStatus; // e.g. "DOWNLOADED", "AVAILABLE", "NOT_DOWNLOADED"
     public boolean isCompleted;
 
-    public LessonEntity(String className, String subject, String chapterNumber, String chapterTitle,
-                        String hindiContent, String motherTongueContent, String motherTongue,
-                        String instruction, String visualType, int lessonIndex, int totalLessons) {
+    public LessonEntity(@NonNull String lessonId, String className, String subject,
+                        String chapterNumber, String title, String description,
+                        String contentReference, String hindiContent, String motherTongueContent,
+                        String languageId, String motherTongue, String instruction,
+                        String visualType, int sequenceOrder, int totalLessons,
+                        int contentVersion, long createdAt, long updatedAt,
+                        String downloadStatus, boolean isCompleted) {
+        this.lessonId = lessonId;
         this.className = className;
         this.subject = subject;
         this.chapterNumber = chapterNumber;
-        this.chapterTitle = chapterTitle;
+        this.title = title;
+        this.description = description;
+        this.contentReference = contentReference;
         this.hindiContent = hindiContent;
         this.motherTongueContent = motherTongueContent;
+        this.languageId = languageId;
         this.motherTongue = motherTongue;
         this.instruction = instruction;
         this.visualType = visualType;
-        this.lessonIndex = lessonIndex;
+        this.sequenceOrder = sequenceOrder;
         this.totalLessons = totalLessons;
-        this.isCompleted = false;
+        this.contentVersion = contentVersion;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.downloadStatus = downloadStatus;
+        this.isCompleted = isCompleted;
     }
 }
