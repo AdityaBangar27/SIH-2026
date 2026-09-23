@@ -53,4 +53,13 @@ public class ThemeHelper {
         String theme = getSavedTheme(context);
         return THEME_DARK.equalsIgnoreCase(theme);
     }
+
+    public static int getThemeColor(Context context, int attrResId) {
+        if (context == null) return 0;
+        android.util.TypedValue typedValue = new android.util.TypedValue();
+        if (context.getTheme().resolveAttribute(attrResId, typedValue, true)) {
+            return typedValue.data;
+        }
+        return 0;
+    }
 }

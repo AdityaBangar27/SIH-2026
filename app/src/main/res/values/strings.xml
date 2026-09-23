@@ -67,19 +67,38 @@
     <string name="btn_next">Next &gt;</string>
     <string name="btn_back_to_lessons">Back to Lessons</string>
 
-    <!-- Voice Translation -->
+    <!-- Voice Translation (Two-Way Teacher ⇄ Student) -->
     <string name="voice_translation_title">Voice Translation</string>
+    <string name="two_way_badge">Two-Way Voice Translation</string>
     <string name="lang_hindi">Hindi</string>
     <string name="lang_santhali">Santhali</string>
     <string name="lang_mundari">Mundari</string>
     <string name="lang_ho">Ho</string>
     <string name="tap_to_speak">Tap to speak</string>
     <string name="listening_indicator">Listening...</string>
-    <string name="recognized_label">Recognized: </string>
-    <string name="sample_recognized">एक, दो, तीन</string>
-    <string name="translation_label">Translation:</string>
-    <string name="sample_translated">ᱢᱤᱫ, ᱵᱟᱨ, ᱯᱮ</string>
     <string name="status_ready">Ready. Tap microphone to speak.</string>
+
+    <string name="role_teacher">Teacher (शिक्षक) • Hindi</string>
+    <string name="role_student">Student (ᱪᱮᱛᱮᱫᱤᱭᱟᱹ) • Santhali</string>
+    <string name="tap_to_speak_hindi">Tap microphone to speak Hindi</string>
+    <string name="tap_to_speak_santhali">Tap microphone to speak Santhali</string>
+    <string name="recording_hindi">Recording speech in Hindi...</string>
+    <string name="recording_santhali">Recording speech in Santhali...</string>
+    <string name="listening_to_teacher">Listening to teacher…</string>
+    <string name="listening_to_student">Listening to student…</string>
+    <string name="translating_to_santhali">Translating Hindi to Santhali...</string>
+    <string name="translating_to_hindi">Translating Santhali to Hindi...</string>
+    <string name="playing_santhali_audio">Playing Santhali audio...</string>
+    <string name="playing_hindi_audio">Playing Hindi audio...</string>
+    <string name="label_recognized_hindi">Recognized (Hindi)</string>
+    <string name="label_recognized_santhali">Recognized (Santhali)</string>
+    <string name="label_translation_hindi">Translation (Hindi)</string>
+    <string name="label_translation_santhali">Translation (Santhali)</string>
+    <string name="placeholder_awaiting_speech">Awaiting speech...</string>
+    <string name="placeholder_awaiting_translation">Awaiting translation...</string>
+    <string name="no_speech_detected">No speech detected. Tap microphone to speak.</string>
+    <string name="translation_unavailable">No verified translation found for this phrase.</string>
+    <string name="listening_role_hint">Receiving role (Listening)</string>
 
     <!-- Worksheets & Flashcards -->
     <string name="worksheets_and_flashcards">Worksheets &amp; Flashcards</string>

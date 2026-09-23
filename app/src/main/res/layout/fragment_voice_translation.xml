@@ -37,6 +37,18 @@
             android:textColor="?attr/customTextColor"
             android:textSize="18sp"
             android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvModeBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_pill_accent"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="4dp"
+            android:text="2-Way"
+            android:textColor="?attr/customPrimaryColor"
+            android:textSize="11sp"
+            android:textStyle="bold" />
     </LinearLayout>
 
     <ScrollView
@@ -51,122 +63,60 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
             android:orientation="vertical"
-            android:paddingHorizontal="20dp"
+            android:paddingHorizontal="16dp"
             android:paddingTop="8dp"
             android:paddingBottom="24dp">
 
-            <!-- Language Pair Switcher Badge -->
+            <!-- Two-Way Direction Indicator Banner -->
             <LinearLayout
-                android:id="@+id/btnLanguageToggle"
-                android:layout_width="wrap_content"
-                android:layout_height="36dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:background="@drawable/bg_pill_secondary"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center_vertical"
+                android:gravity="center"
                 android:orientation="horizontal"
-                android:paddingHorizontal="16dp">
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="8dp">
 
                 <TextView
-                    android:id="@+id/tvSourceLang"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/lang_hindi"
+                    android:text="Teacher (Hindi)"
                     android:textColor="?attr/customTextColor"
-                    android:textSize="13sp"
+                    android:textSize="12sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="10dp"
-                    android:text="➔"
+                    android:text="⇄"
                     android:textColor="?attr/customPrimaryColor"
-                    android:textSize="14sp" />
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/tvTargetLang"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/lang_santhali"
+                    android:text="Student (Santhali)"
                     android:textColor="?attr/customPrimaryColor"
-                    android:textSize="13sp"
+                    android:textSize="12sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- Big Microphone Center Area with Ripple -->
-            <FrameLayout
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_marginTop="28dp">
-
-                <!-- Ripple pulse background view -->
-                <View
-                    android:id="@+id/viewMicRipple"
-                    android:layout_width="120dp"
-                    android:layout_height="120dp"
-                    android:layout_gravity="center"
-                    android:background="@drawable/bg_mic_ripple" />
-
-                <!-- Central circular mic button -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/btnMicAction"
-                    android:layout_width="76dp"
-                    android:layout_height="76dp"
-                    android:layout_gravity="center"
-                    android:clickable="true"
-                    android:focusable="true"
-                    app:cardBackgroundColor="?attr/customPrimaryColor"
-                    app:cardCornerRadius="38dp"
-                    app:cardElevation="6dp"
-                    app:strokeColor="@android:color/transparent">
-
-                    <ImageView
-                        android:id="@+id/ivMicIcon"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:layout_gravity="center"
-                        android:contentDescription="@string/tap_to_speak"
-                        android:src="@drawable/ic_mic"
-                        app:tint="?attr/colorOnPrimary" />
-                </com.google.android.material.card.MaterialCardView>
-            </FrameLayout>
-
-            <!-- Tap To Speak / Status Label -->
-            <TextView
-                android:id="@+id/tvMicStatusLabel"
-                android:layout_width="wrap_content"
+            <!-- ============================================================== -->
+            <!-- 1. TEACHER ROLE PANEL (Hindi)                                  -->
+            <!-- ============================================================== -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardTeacherPanel"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:text="@string/tap_to_speak"
-                android:textColor="?attr/customTextColor"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-
-            <!-- Audio Waveform Visualization Graphic -->
-            <ImageView
-                android:id="@+id/ivWaveform"
-                android:layout_width="match_parent"
-                android:layout_height="36dp"
-                android:layout_marginTop="16dp"
-                android:contentDescription="Audio waveform"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_waveform"
-                app:tint="?attr/customPrimaryColor" />
-
-            <!-- Card 1: Recognized Text -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardRecognized"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
                 app:cardBackgroundColor="?attr/customCardColor"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
+                app:cardElevation="2dp"
                 app:strokeColor="?attr/customBorderColor"
-                app:strokeWidth="1dp">
+                app:strokeWidth="1.5dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -174,90 +124,392 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/recognized_label"
-                        android:textColor="?attr/customTextSecondaryColor"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tvRecognizedText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:text="@string/sample_recognized"
-                        android:textColor="?attr/customTextColor"
-                        android:textSize="18sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Card 2: Translated Output with Speaker -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardTranslation"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                app:cardBackgroundColor="?attr/customCardTintColor"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                app:strokeColor="?attr/customBorderColor"
-                app:strokeWidth="1dp">
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="16dp">
-
+                    <!-- Panel Header -->
                     <LinearLayout
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentStart="true"
-                        android:layout_toStartOf="@+id/btnPlayTranslation"
-                        android:orientation="vertical">
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
                         <TextView
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:text="@string/translation_label"
-                            android:textColor="?attr/customTextSecondaryColor"
-                            android:textSize="12sp"
+                            android:layout_weight="1"
+                            android:text="@string/role_teacher"
+                            android:textColor="?attr/customTextColor"
+                            android:textSize="15sp"
                             android:textStyle="bold" />
 
                         <TextView
-                            android:id="@+id/tvTranslatedText"
+                            android:id="@+id/badgeTeacherState"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:text="@string/sample_translated"
+                            android:background="@drawable/bg_pill_accent"
+                            android:paddingHorizontal="8dp"
+                            android:paddingVertical="2dp"
+                            android:text="Ready"
                             android:textColor="?attr/customPrimaryColor"
-                            android:textSize="20sp"
+                            android:textSize="11sp"
                             android:textStyle="bold" />
                     </LinearLayout>
 
-                    <!-- Speaker Control Button -->
-                    <ImageView
-                        android:id="@+id/btnPlayTranslation"
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
-                        android:layout_alignParentEnd="true"
-                        android:layout_centerVertical="true"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:contentDescription="Pronounce Translation"
-                        android:padding="6dp"
-                        android:src="@drawable/ic_speaker"
-                        app:tint="?attr/customPrimaryColor" />
-                </RelativeLayout>
+                    <!-- Teacher Single Control (Mic / Ear) -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingVertical="12dp">
+
+                        <FrameLayout
+                            android:layout_width="84dp"
+                            android:layout_height="84dp">
+
+                            <!-- Pulse Ripple View -->
+                            <View
+                                android:id="@+id/viewTeacherRipple"
+                                android:layout_width="84dp"
+                                android:layout_height="84dp"
+                                android:layout_gravity="center"
+                                android:background="@drawable/bg_mic_ripple"
+                                android:visibility="invisible" />
+
+                            <!-- Single Role Control Button -->
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/btnTeacherControl"
+                                android:layout_width="60dp"
+                                android:layout_height="60dp"
+                                android:layout_gravity="center"
+                                android:clickable="true"
+                                android:focusable="true"
+                                app:cardBackgroundColor="?attr/customPrimaryColor"
+                                app:cardCornerRadius="30dp"
+                                app:cardElevation="4dp"
+                                app:strokeColor="@android:color/transparent">
+
+                                <ImageView
+                                    android:id="@+id/ivTeacherControlIcon"
+                                    android:layout_width="28dp"
+                                    android:layout_height="28dp"
+                                    android:layout_gravity="center"
+                                    android:contentDescription="Teacher Microphone"
+                                    android:src="@drawable/ic_mic"
+                                    app:tint="@color/white" />
+                            </com.google.android.material.card.MaterialCardView>
+                        </FrameLayout>
+
+                        <!-- Teacher Status Text -->
+                        <TextView
+                            android:id="@+id/tvTeacherStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="@string/tap_to_speak_hindi"
+                            android:textColor="?attr/customTextColor"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <!-- Teacher Box 1: Recognized Hindi Text -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        app:cardBackgroundColor="?attr/customCardTintColor"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="?attr/customBorderColor"
+                        app:strokeWidth="1dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/label_recognized_hindi"
+                                android:textColor="?attr/customTextSecondaryColor"
+                                android:textSize="11sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvTeacherRecognized"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:hint="@string/placeholder_awaiting_speech"
+                                android:textColor="?attr/customTextColor"
+                                android:textColorHint="?attr/customTextSecondaryColor"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Teacher Box 2: Translated Hindi Text (from Student) -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        app:cardBackgroundColor="?attr/customCardColor"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="?attr/customBorderColor"
+                        app:strokeWidth="1dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/label_translation_hindi"
+                                android:textColor="?attr/customPrimaryColor"
+                                android:textSize="11sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvTeacherTranslated"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:hint="@string/placeholder_awaiting_translation"
+                                android:textColor="?attr/customTextColor"
+                                android:textColorHint="?attr/customTextSecondaryColor"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Ready / Module Integration Status Text -->
+            <!-- Flow Divider Indicator -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="6dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"
+                    android:background="?attr/customBorderColor" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="12dp"
+                    android:text="⇅"
+                    android:textColor="?attr/customPrimaryColor"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"
+                    android:background="?attr/customBorderColor" />
+            </LinearLayout>
+
+            <!-- ============================================================== -->
+            <!-- 2. STUDENT ROLE PANEL (Santhali)                               -->
+            <!-- ============================================================== -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardStudentPanel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="?attr/customCardColor"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeColor="?attr/customBorderColor"
+                app:strokeWidth="1.5dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- Panel Header -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/role_student"
+                            android:textColor="?attr/customTextColor"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/badgeStudentState"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_pill_accent"
+                            android:paddingHorizontal="8dp"
+                            android:paddingVertical="2dp"
+                            android:text="Ready"
+                            android:textColor="?attr/customPrimaryColor"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <!-- Student Single Control (Mic / Ear) -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingVertical="12dp">
+
+                        <FrameLayout
+                            android:layout_width="84dp"
+                            android:layout_height="84dp">
+
+                            <!-- Pulse Ripple View -->
+                            <View
+                                android:id="@+id/viewStudentRipple"
+                                android:layout_width="84dp"
+                                android:layout_height="84dp"
+                                android:layout_gravity="center"
+                                android:background="@drawable/bg_mic_ripple"
+                                android:visibility="invisible" />
+
+                            <!-- Single Role Control Button -->
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/btnStudentControl"
+                                android:layout_width="60dp"
+                                android:layout_height="60dp"
+                                android:layout_gravity="center"
+                                android:clickable="true"
+                                android:focusable="true"
+                                app:cardBackgroundColor="?attr/customPrimaryColor"
+                                app:cardCornerRadius="30dp"
+                                app:cardElevation="4dp"
+                                app:strokeColor="@android:color/transparent">
+
+                                <ImageView
+                                    android:id="@+id/ivStudentControlIcon"
+                                    android:layout_width="28dp"
+                                    android:layout_height="28dp"
+                                    android:layout_gravity="center"
+                                    android:contentDescription="Student Microphone"
+                                    android:src="@drawable/ic_mic"
+                                    app:tint="@color/white" />
+                            </com.google.android.material.card.MaterialCardView>
+                        </FrameLayout>
+
+                        <!-- Student Status Text -->
+                        <TextView
+                            android:id="@+id/tvStudentStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="@string/tap_to_speak_santhali"
+                            android:textColor="?attr/customTextColor"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <!-- Student Box 1: Recognized Santhali Text -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        app:cardBackgroundColor="?attr/customCardTintColor"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="?attr/customBorderColor"
+                        app:strokeWidth="1dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/label_recognized_santhali"
+                                android:textColor="?attr/customTextSecondaryColor"
+                                android:textSize="11sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvStudentRecognized"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:hint="@string/placeholder_awaiting_speech"
+                                android:textColor="?attr/customTextColor"
+                                android:textColorHint="?attr/customTextSecondaryColor"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Student Box 2: Translated Santhali Text (from Teacher) -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        app:cardBackgroundColor="?attr/customCardColor"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="?attr/customBorderColor"
+                        app:strokeWidth="1dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/label_translation_santhali"
+                                android:textColor="?attr/customPrimaryColor"
+                                android:textSize="11sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvStudentTranslated"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:hint="@string/placeholder_awaiting_translation"
+                                android:textColor="?attr/customTextColor"
+                                android:textColorHint="?attr/customTextSecondaryColor"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Bottom Engine Ready Status -->
             <TextView
                 android:id="@+id/tvEngineStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="16dp"
                 android:text="@string/status_ready"
                 android:textColor="?attr/customTextSecondaryColor"
                 android:textSize="12sp" />
