@@ -1,0 +1,87 @@
+{
+  "model": "collabora/whisper-tiny-hindi-ONNX-INT8",
+  "model_size_mb": 57.14,
+  "target_device": "Android (CPU / ONNX Runtime Mobile)",
+  "average_inference_sec": 1.02,
+  "average_total_sec": 1.101,
+  "results": [
+    {
+      "id": 1,
+      "category": "Patriotic Statement",
+      "reference_text": "मेरा भारत महान जय हिंद",
+      "recognized_text": "मेरा भारत महान जय हिंद",
+      "load_time_sec": 0.957,
+      "preprocessing_sec": 0.0485,
+      "inference_sec": 0.5861,
+      "postprocessing_sec": 0.0114,
+      "total_sec": 0.646,
+      "ram_rss_mb": 1914.75,
+      "tokens_decoded": 22
+    },
+    {
+      "id": 2,
+      "category": "Basic Greeting",
+      "reference_text": "नमस्ते",
+      "recognized_text": "नौ मस्त है।",
+      "load_time_sec": 0.957,
+      "preprocessing_sec": 0.0095,
+      "inference_sec": 0.4831,
+      "postprocessing_sec": 0.0048,
+      "total_sec": 0.4975,
+      "ram_rss_mb": 1928.76,
+      "tokens_decoded": 13
+    },
+    {
+      "id": 3,
+      "category": "Classroom Intent",
+      "reference_text": "आज हम पढ़ाई करेंगे",
+      "recognized_text": "आज हम पढ़ाई करेंगे",
+      "load_time_sec": 0.957,
+      "preprocessing_sec": 0.0514,
+      "inference_sec": 0.7344,
+      "postprocessing_sec": 0.0112,
+      "total_sec": 0.797,
+      "ram_rss_mb": 1924.65,
+      "tokens_decoded": 23
+    },
+    {
+      "id": 4,
+      "category": "National Identity",
+      "reference_text": "भारत एक महान देश है",
+      "recognized_text": "भारत एक महान देश हैं",
+      "load_time_sec": 0.957,
+      "preprocessing_sec": 0.0101,
+      "inference_sec": 0.6165,
+      "postprocessing_sec": 0.0086,
+      "total_sec": 0.6351,
+      "ram_rss_mb": 1924.78,
+      "tokens_decoded": 21
+    },
+    {
+      "id": 5,
+      "category": "Short Educational Sentence",
+      "reference_text": "किताब खोलो और पाठ पढ़ो",
+      "recognized_text": "किताब खोलो और बाथ परो",
+      "load_time_sec": 0.957,
+      "preprocessing_sec": 0.0385,
+      "inference_sec": 0.6836,
+      "postprocessing_sec": 0.0151,
+      "total_sec": 0.7372,
+      "ram_rss_mb": 1924.78,
+      "tokens_decoded": 24
+    },
+    {
+      "id": 6,
+      "category": "Longer Educational Sentence",
+      "reference_text": "शिक्षा मनुष्य के जीवन में सबसे महत्वपूर्ण शक्ति है और यह हमें आगे बढ़ाती है",
+      "recognized_text": "शिक्षा मनुष्य के जीवन में सबसे महत्वपूर्ण शक्ति है और यह",
+      "load_time_sec": 0.957,
+      "preprocessing_sec": 0.2304,
+      "inference_sec": 3.0193,
+      "postprocessing_sec": 0.0462,
+      "total_sec": 3.2959,
+      "ram_rss_mb": 1933.47,
+      "tokens_decoded": 60
+    }
+  ]
+}

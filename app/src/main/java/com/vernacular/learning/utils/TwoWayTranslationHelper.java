@@ -2,6 +2,7 @@ package com.vernacular.learning.utils;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
+import com.vernacular.learning.ai.TranslationManager;
 import com.vernacular.learning.data.local.AppDatabase;
 import com.vernacular.learning.data.local.entities.VerifiedTranslationEntity;
 import java.util.Collections;
@@ -107,6 +108,14 @@ public class TwoWayTranslationHelper {
         }
     }
 
+    public static boolean hasVerifiedTranslation(String hindi) {
+        return HINDI_TO_SANTHALI.containsKey(normalize(hindi));
+    }
+
+    public static String getVerifiedTranslation(String hindi) {
+        return HINDI_TO_SANTHALI.get(normalize(hindi));
+    }
+
     public static String normalize(String text) {
         if (text == null) return "";
         return text.trim()
@@ -129,6 +138,17 @@ public class TwoWayTranslationHelper {
         translate(context, speechText, LANG_SANTHALI, LANG_HINDI, callback);
     }
 
+    private static TranslationManager translationManager;
+    private static boolean isTranslationManagerInitialized = false;
+
+    private static synchronized TranslationManager getTranslationManager(Context context) {
+        if (translationManager == null && context != null) {
+            translationManager = new TranslationManager();
+            isTranslationManagerInitialized = translationManager.initialize(context.getApplicationContext());
+        }
+        return isTranslationManagerInitialized ? translationManager : null;
+    }
+
     /**
      * Unified translation method connecting local verified translations and classroom corpus.
      * Guaranteed not to fabricate translations if no match exists.
@@ -147,30 +167,45 @@ public class TwoWayTranslationHelper {
         executor.execute(() -> {
             String translated = null;
 
-            // 1. Check Room verified translations table
-            try {
-                if (context != null) {
-                    AppDatabase db = AppDatabase.getInstance(context);
-                    List<VerifiedTranslationEntity> list = db.verifiedTranslationDao().getTranslations(sourceLang, targetLang);
-                    if (list != null) {
-                        for (VerifiedTranslationEntity entity : list) {
-                            if (normalize(entity.originalText).equalsIgnoreCase(normalized)) {
-                                translated = entity.translatedText;
-                                break;
+            // 1. Check verified classroom educational dictionary first (exact match)
+            if (LANG_HINDI.equals(sourceLang) && LANG_SANTHALI.equals(targetLang)) {
+                translated = HINDI_TO_SANTHALI.get(normalized);
+            } else if (LANG_SANTHALI.equals(sourceLang) && LANG_HINDI.equals(targetLang)) {
+                translated = SANTHALI_TO_HINDI.get(normalized);
+            }
+
+            // 2. Try local offline IndicTrans2 ONNX neural translation
+            if (translated == null) {
+                try {
+                    TranslationManager tm = getTranslationManager(context);
+                    if (tm != null && LANG_HINDI.equals(sourceLang) && LANG_SANTHALI.equals(targetLang)) {
+                        String neuralResult = tm.translate(cleanInput);
+                        if (neuralResult != null && !neuralResult.trim().isEmpty() && !neuralResult.contains("<unk>")) {
+                            translated = neuralResult.trim();
+                        }
+                    }
+                } catch (Exception ignored) {
+                    // Fallback to verified records
+                }
+            }
+
+            // 3. Check Room verified translations table
+            if (translated == null) {
+                try {
+                    if (context != null) {
+                        AppDatabase db = AppDatabase.getInstance(context);
+                        List<VerifiedTranslationEntity> list = db.verifiedTranslationDao().getTranslations(sourceLang, targetLang);
+                        if (list != null) {
+                            for (VerifiedTranslationEntity entity : list) {
+                                if (normalize(entity.originalText).equalsIgnoreCase(normalized)) {
+                                    translated = entity.translatedText;
+                                    break;
+                                }
                             }
                         }
                     }
-                }
-            } catch (Exception ignored) {
-                // Fallback to offline educational dictionary
-            }
-
-            // 2. Check offline classroom dictionary
-            if (translated == null) {
-                if (LANG_HINDI.equals(sourceLang) && LANG_SANTHALI.equals(targetLang)) {
-                    translated = HINDI_TO_SANTHALI.get(normalized);
-                } else if (LANG_SANTHALI.equals(sourceLang) && LANG_HINDI.equals(targetLang)) {
-                    translated = SANTHALI_TO_HINDI.get(normalized);
+                } catch (Exception ignored) {
+                    // Fallback to offline educational dictionary
                 }
             }
 

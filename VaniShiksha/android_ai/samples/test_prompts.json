@@ -1,0 +1,40 @@
+{
+  "benchmark_sentences": [
+    {
+      "id": 1,
+      "category": "Patriotic Statement",
+      "text": "मेरा भारत महान जय हिंद",
+      "description": "Standard Hindi patriotic phrase testing conjuncts and nasals"
+    },
+    {
+      "id": 2,
+      "category": "Basic Greeting",
+      "text": "नमस्ते",
+      "description": "Single-word greeting testing short audio recognition and decoding stability"
+    },
+    {
+      "id": 3,
+      "category": "Classroom Intent",
+      "text": "आज हम पढ़ाई करेंगे",
+      "description": "Conversational educational prompt for daily classroom usage"
+    },
+    {
+      "id": 4,
+      "category": "National Identity",
+      "text": "भारत एक महान देश है",
+      "description": "Common declarative statement testing sentence rhythm"
+    },
+    {
+      "id": 5,
+      "category": "Short Educational Sentence",
+      "text": "किताब खोलो और पाठ पढ़ो",
+      "description": "Teacher classroom instruction"
+    },
+    {
+      "id": 6,
+      "category": "Longer Educational Sentence",
+      "text": "शिक्षा मनुष्य के जीवन में सबसे महत्वपूर्ण शक्ति है और यह हमें आगे बढ़ाती है",
+      "description": "Complex compound educational sentence testing multi-token decoding without truncation"
+    }
+  ]
+}

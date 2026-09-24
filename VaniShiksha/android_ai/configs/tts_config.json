@@ -1,0 +1,18 @@
+{
+  "engine": "Santali Piper VITS Speech Engine",
+  "model_asset": "models/tts/sat_piper_model.onnx",
+  "config_asset": "models/tts/sat_piper_model.onnx.json",
+  "source_model": "Ashraf01k/vernacular-pedagogy-santhali",
+  "architecture": "Variational Inference for Text-to-Speech (VITS / Piper ONNX)",
+  "language": "sat",
+  "script": "Santali Ol Chiki (U+1C50-U+1C7F)",
+  "phoneme_type": "text",
+  "parameter_count": 30000000,
+  "model_size_mb": 60.57,
+  "sampling_rate": 16000,
+  "audio_format": "16-bit Mono PCM WAV",
+  "latency_seconds_cpu": 0.26,
+  "ram_usage_mb": 65.0,
+  "license": "MIT",
+  "status": "OPERATIONAL_OFFLINE"
+}

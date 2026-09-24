@@ -2,9 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Microphone input for offline speech recognition -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:name=".VernacularApp"
@@ -16,6 +15,7 @@
         android:roundIcon="@drawable/ic_vaani_app_icon"
         android:supportsRtl="true"
         android:theme="@style/Theme.VernacularLearning"
+        android:extractNativeLibs="true"
         tools:targetApi="34">
 
         <!-- Splash Screen (Launcher) -->

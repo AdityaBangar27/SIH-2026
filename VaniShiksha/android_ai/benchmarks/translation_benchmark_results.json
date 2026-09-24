@@ -1,0 +1,87 @@
+{
+  "model": "indictrans2-indic-indic-dist-320M-ONNX-int8",
+  "model_size_mb": 312.65,
+  "target_device": "Android (CPU / ONNX Runtime Mobile)",
+  "average_inference_sec": 0.168,
+  "average_total_sec": 0.17,
+  "results": [
+    {
+      "source_text": "मेरा भारत महान जय हिंद",
+      "translated_text": "ᱤᱧᱟᱹᱜ ᱵᱷᱟᱨᱚᱛ ᱫᱚ ᱦᱩᱭᱩᱜ ᱠᱟᱱᱟ ᱢᱮᱥᱴ ᱡᱚᱭ ᱦᱤᱱᱫ ᱾",
+      "tokenization_sec": 0.0112,
+      "inference_sec": 0.2518,
+      "detokenization_sec": 0.0001,
+      "total_sec": 0.263,
+      "ram_rss_mb": 492.39,
+      "tokens_generated": 14,
+      "id": 1,
+      "category": "Patriotic Statement",
+      "init_time_sec": 2.973
+    },
+    {
+      "source_text": "नमस्ते, आप कैसे हैं?",
+      "translated_text": "ᱟᱢ ᱪᱮᱫ ᱞᱮᱠᱟ , ᱟᱢ ᱪᱮᱫ ᱞᱮᱠᱟ ᱾",
+      "tokenization_sec": 0.0001,
+      "inference_sec": 0.1266,
+      "detokenization_sec": 0.0,
+      "total_sec": 0.1268,
+      "ram_rss_mb": 493.12,
+      "tokens_generated": 10,
+      "id": 2,
+      "category": "Basic Greeting",
+      "init_time_sec": 2.973
+    },
+    {
+      "source_text": "आज हम पढ़ाई करेंगे",
+      "translated_text": "ᱛᱮᱦᱮᱧ ᱟᱢ ᱯᱟᱲᱦᱟᱣ ᱢᱮ ᱾",
+      "tokenization_sec": 0.0003,
+      "inference_sec": 0.0869,
+      "detokenization_sec": 0.0,
+      "total_sec": 0.0872,
+      "ram_rss_mb": 493.19,
+      "tokens_generated": 7,
+      "id": 3,
+      "category": "Classroom Intent",
+      "init_time_sec": 2.973
+    },
+    {
+      "source_text": "भारत एक महान देश है",
+      "translated_text": "ᱵᱷᱟᱨᱚᱛ ᱫᱚ ᱢᱤᱫᱴᱟᱝ ᱢᱟᱨᱟᱝ ᱫᱤᱥᱚᱢ ᱾",
+      "tokenization_sec": 0.0001,
+      "inference_sec": 0.1003,
+      "detokenization_sec": 0.0,
+      "total_sec": 0.1005,
+      "ram_rss_mb": 493.21,
+      "tokens_generated": 8,
+      "id": 4,
+      "category": "National Identity",
+      "init_time_sec": 2.973
+    },
+    {
+      "source_text": "किताब खोलो और पाठ पढ़ो",
+      "translated_text": "ᱯᱚᱛᱚᱵ ᱫᱚ ᱮᱦᱚᱵ ᱢᱮ ᱟᱨ ᱚᱞ ᱫᱚ ᱯᱟᱲᱦᱟᱣ ᱢᱮ ᱾",
+      "tokenization_sec": 0.0002,
+      "inference_sec": 0.1498,
+      "detokenization_sec": 0.0,
+      "total_sec": 0.15,
+      "ram_rss_mb": 493.28,
+      "tokens_generated": 12,
+      "id": 5,
+      "category": "Short Educational Sentence",
+      "init_time_sec": 2.973
+    },
+    {
+      "source_text": "शिक्षा मनुष्य के जीवन में सबसे महत्वपूर्ण शक्ति है और यह हमें आगे बढ़ाती है",
+      "translated_text": "ᱥᱮᱪᱮᱫ ᱦᱩᱭᱩᱜ ᱠᱟᱱᱟ ᱦᱚᱲ ᱠᱚᱣᱟᱜ ᱡᱤᱭᱚᱱ ᱨᱮᱭᱟᱜ ᱡᱚᱛᱚ ᱠᱷᱚᱱ ᱞᱟᱹᱠᱛᱤᱭᱟᱱ ᱫᱟᱲᱮ ᱟᱨ ᱱᱚᱶᱟ ᱫᱚ ᱤᱧᱟᱹᱜ ᱮ ᱪᱟᱞᱟᱣ ᱮᱫᱟ ᱾",
+      "tokenization_sec": 0.0003,
+      "inference_sec": 0.2919,
+      "detokenization_sec": 0.0,
+      "total_sec": 0.2923,
+      "ram_rss_mb": 497.23,
+      "tokens_generated": 22,
+      "id": 6,
+      "category": "Longer Educational Sentence",
+      "init_time_sec": 2.973
+    }
+  ]
+}

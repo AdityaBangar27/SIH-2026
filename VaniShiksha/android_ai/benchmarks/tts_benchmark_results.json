@@ -1,0 +1,115 @@
+{
+  "desktop_model_evaluation": {
+    "model_name": "RXD03/indic-parler-tts",
+    "architecture": "Autoregressive Multi-Codebook DAC Decoder + Flan-T5 Text Encoder",
+    "parameter_count": 600000000,
+    "model_disk_size_gb": 2.45,
+    "runtime_peak_ram_gb": 4.6,
+    "measured_cpu_latency_sec": 103.8,
+    "android_2gb_ram_limit_gb": 2.0,
+    "android_safety_ceiling_gb": 1.8,
+    "android_compatibility_verdict": "STRICTLY INCOMPATIBLE / IMMEDIATE OOM",
+    "root_cause_analysis": [
+      "1. Parameter Footprint: 600M parameters require >2.4 GB uncompressed weights, exceeding total physical RAM (2 GB) of target device.",
+      "2. Runtime Memory: PyTorch/Transformers KV cache, attention matrices, and Flan-T5 activations consume >4.5 GB RAM, triggering Android OS Low-Memory Killer (LMK) kill-9 instantly.",
+      "3. Autoregressive Latency: Generating 9 Descript Audio Codec (DAC) token codebooks at 86.13 tokens/sec takes ~103.8s on CPU, missing the <5s budget by 20x.",
+      "4. Android Runtime Support: DAC neural audio codec and dual-tokenizer cross-attention currently lack turnkey ONNX Runtime Android execution kernels without custom C++ builds."
+    ]
+  },
+  "mobile_vits_engine_evaluation": {
+    "architecture": "Non-Autoregressive VITS (Variational Inference TTS)",
+    "parameter_count": 35000000,
+    "model_size_mb": 140.0,
+    "quantized_size_mb": 38.0,
+    "load_time_sec": 1.514,
+    "average_latency_sec": 0.263,
+    "average_audio_duration_sec": 2.65,
+    "average_tokens_per_sec": 1513.78,
+    "peak_rss_mb": 1706.9,
+    "results": [
+      {
+        "id": 1,
+        "desc": "Standard Ol Chiki Greeting",
+        "input_text": "ᱥᱟᱱᱟᱢ ᱠᱚ ᱜᱮ ᱥᱟᱹᱜᱩᱱ ᱡᱚᱦᱟᱨ",
+        "audio_duration_sec": 2.19,
+        "generation_time_sec": 0.736,
+        "tokens_per_sec": 255.39,
+        "sample_rate": 16000,
+        "rms_energy": 0.126201,
+        "process_rss_mb": 1625.1,
+        "valid_audio": true
+      },
+      {
+        "id": 2,
+        "desc": "Conversational Enquiry",
+        "input_text": "ᱟᱢ ᱪᱮᱫ ᱞᱮᱠᱟ , ᱟᱢ ᱪᱮᱫ ᱞᱮᱠᱟ ᱾",
+        "audio_duration_sec": 2.21,
+        "generation_time_sec": 0.209,
+        "tokens_per_sec": 907.65,
+        "sample_rate": 16000,
+        "rms_energy": 0.132839,
+        "process_rss_mb": 1631.0,
+        "valid_audio": true
+      },
+      {
+        "id": 3,
+        "desc": "Classroom Intent",
+        "input_text": "ᱛᱮᱦᱮᱧ ᱟᱢ ᱯᱟᱲᱦᱟᱣ ᱢᱮ ᱾",
+        "audio_duration_sec": 1.74,
+        "generation_time_sec": 0.315,
+        "tokens_per_sec": 475.97,
+        "sample_rate": 16000,
+        "rms_energy": 0.128944,
+        "process_rss_mb": 1696.8,
+        "valid_audio": true
+      },
+      {
+        "id": 4,
+        "desc": "Declarative Statement",
+        "input_text": "ᱵᱷᱟᱨᱚᱛ ᱫᱚ ᱢᱤᱫᱴᱟᱝ ᱢᱟᱨᱟᱝ ᱫᱤᱥᱚᱢ ᱾",
+        "audio_duration_sec": 1.62,
+        "generation_time_sec": 0.084,
+        "tokens_per_sec": 1655.58,
+        "sample_rate": 16000,
+        "rms_energy": 0.212981,
+        "process_rss_mb": 1698.3,
+        "valid_audio": true
+      },
+      {
+        "id": 5,
+        "desc": "Educational Instruction",
+        "input_text": "ᱯᱚᱛᱚᱵ ᱫᱚ ᱮᱦᱚᱵ ᱢᱮ ᱟᱨ ᱚᱞ ᱫᱚ ᱯᱟᱲᱦᱟᱣ ᱢᱮ ᱾",
+        "audio_duration_sec": 2.7,
+        "generation_time_sec": 0.093,
+        "tokens_per_sec": 2487.85,
+        "sample_rate": 16000,
+        "rms_energy": 0.149631,
+        "process_rss_mb": 1700.5,
+        "valid_audio": true
+      },
+      {
+        "id": 6,
+        "desc": "Compound Sentence",
+        "input_text": "ᱥᱮᱪᱮᱫ ᱦᱩᱭᱩᱜ ᱠᱟᱱᱟ ᱦᱚᱲ ᱠᱚᱣᱟᱜ ᱡᱤᱭᱚᱱ ᱨᱮᱭᱟᱜ ᱡᱚᱛᱚ ᱠᱷᱚᱱ ᱞᱟᱹᱠᱛᱤᱭᱟᱱ ᱫᱟᱲᱮ ᱟᱨ ᱱᱚᱶᱟ ᱫᱚ ᱤᱧᱟᱹᱜ ᱮ ᱪᱟᱞᱟᱣ ᱮᱫᱟ ᱾",
+        "audio_duration_sec": 5.44,
+        "generation_time_sec": 0.142,
+        "tokens_per_sec": 3300.25,
+        "sample_rate": 16000,
+        "rms_energy": 0.168556,
+        "process_rss_mb": 1706.9,
+        "valid_audio": true
+      }
+    ]
+  },
+  "santali_ecosystem_status": {
+    "native_lightweight_santali_model_exists": false,
+    "evaluated_repositories": [
+      "HuggingFace Hub (search: santali tts, mms-tts sat)",
+      "AI4Bharat Indic-TTS (13 Indian languages, Santali absent)",
+      "Piper TTS / Rhasspy (Santali absent)",
+      "Sherpa-ONNX (Santali absent)",
+      "Meta MMS-TTS (Santali Ol Chiki absent)"
+    ],
+    "conclusion": "Native Santali TTS is an ecosystem data blocker. Indic Parler-TTS is the only open Santali TTS model in existence, but at 600M params and >4.5 GB RAM it cannot run on a 2 GB mobile device. The mobile VITS phonetic proxy operates successfully within budget for prototyping."
+  }
+}

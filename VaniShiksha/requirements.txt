@@ -1,0 +1,17 @@
+torch
+transformers
+sentencepiece
+huggingface_hub
+streamlit
+sacremoses
+onnxruntime
+tokenizers
+sacrebleu
+pandas
+soundfile
+scipy
+aksharamukha
+torchvision
+accelerate
+# Santali TTS via Indic Parler-TTS (install manually):
+# pip install git+https://github.com/huggingface/parler-tts.git

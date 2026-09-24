@@ -4,15 +4,13 @@ import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.speech.RecognitionListener;
-import android.speech.RecognizerIntent;
-import android.speech.SpeechRecognizer;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,32 +22,34 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import com.google.android.material.card.MaterialCardView;
 import com.vernacular.learning.R;
-import com.vernacular.learning.utils.AudioHelper;
+import com.vernacular.learning.ai.PipelineResult;
+import com.vernacular.learning.ai.VoicePipelineManager;
+import com.vernacular.learning.utils.AudioPlayer;
+import com.vernacular.learning.utils.AudioRecorder;
 import com.vernacular.learning.utils.ThemeHelper;
-import com.vernacular.learning.utils.TwoWayTranslationHelper;
-import java.util.ArrayList;
+import java.io.File;
 
 /**
- * Two-Way Voice Translation Fragment supporting:
- * 1. Teacher speaks Hindi -> translates into Santhali -> Student listens to Santhali audio.
- * 2. Student speaks Santhali -> translates into Hindi -> Teacher listens to Hindi audio.
+ * Voice Translation Fragment implementing the offline teaching workflow:
  *
- * Enforces single microphone control per role, automatic ear/listening icon state transitions,
- * verified translation verification, and audio playback.
+ * Teacher / Hindi
+ *        ↓
+ * Hindi → Santali
+ *        ↓
+ * Student / Santali
+ *
+ * Runs 100% locally and offline on CPU using Whisper ASR and IndicTrans2 neural translation.
+ * Employs local Noto Sans Ol Chiki font resource for authentic Santali Unicode display.
  */
 public class VoiceTranslationFragment extends Fragment {
+    private static final String TAG = "VoiceTranslationFrag";
 
-    public enum Role {
-        NONE,
-        TEACHER,
-        STUDENT
-    }
-
-    private Role activeSpeaker = Role.NONE;
     private boolean isRecording = false;
+    private File currentOutputAudioFile = null;
 
     // Teacher Panel Views
     private MaterialCardView btnTeacherControl;
@@ -58,34 +58,36 @@ public class VoiceTranslationFragment extends Fragment {
     private TextView tvTeacherStatus;
     private TextView badgeTeacherState;
     private TextView tvTeacherRecognized;
-    private TextView tvTeacherTranslated;
 
     // Student Panel Views
-    private MaterialCardView btnStudentControl;
-    private ImageView ivStudentControlIcon;
-    private View viewStudentRipple;
-    private TextView tvStudentStatus;
     private TextView badgeStudentState;
-    private TextView tvStudentRecognized;
     private TextView tvStudentTranslated;
+    private TextView tvStudentStatus;
+    private MaterialCardView btnPlaySantali;
+    private ImageView ivPlaySantaliIcon;
+    private TextView tvPlaySantaliLabel;
 
     // Engine Status
     private TextView tvEngineStatus;
 
     private ObjectAnimator pulseAnimator;
     private final Handler handler = new Handler(Looper.getMainLooper());
-    private SpeechRecognizer speechRecognizer;
-    private Role pendingRolePermission = null;
+    private VoicePipelineManager voicePipelineManager;
+    private AudioRecorder audioRecorder;
+    private AudioPlayer audioPlayer;
+    private boolean permissionRequestedForRecording = false;
 
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (isGranted) {
-                    if (pendingRolePermission != null) {
-                        startSpeaking(pendingRolePermission);
-                        pendingRolePermission = null;
+                    if (permissionRequestedForRecording) {
+                        permissionRequestedForRecording = false;
+                        startRecording();
                     }
                 } else {
-                    Toast.makeText(requireContext(), "Microphone permission required for voice translation.", Toast.LENGTH_SHORT).show();
+                    if (isAdded()) {
+                        Toast.makeText(requireContext(), "Microphone permission required for offline speech recognition.", Toast.LENGTH_SHORT).show();
+                    }
                     resetToIdle();
                 }
             });
@@ -105,317 +107,269 @@ public class VoiceTranslationFragment extends Fragment {
         tvTeacherStatus = root.findViewById(R.id.tvTeacherStatus);
         badgeTeacherState = root.findViewById(R.id.badgeTeacherState);
         tvTeacherRecognized = root.findViewById(R.id.tvTeacherRecognized);
-        tvTeacherTranslated = root.findViewById(R.id.tvTeacherTranslated);
 
         // Student Panel bindings
-        btnStudentControl = root.findViewById(R.id.btnStudentControl);
-        ivStudentControlIcon = root.findViewById(R.id.ivStudentControlIcon);
-        viewStudentRipple = root.findViewById(R.id.viewStudentRipple);
-        tvStudentStatus = root.findViewById(R.id.tvStudentStatus);
         badgeStudentState = root.findViewById(R.id.badgeStudentState);
-        tvStudentRecognized = root.findViewById(R.id.tvStudentRecognized);
         tvStudentTranslated = root.findViewById(R.id.tvStudentTranslated);
+        tvStudentStatus = root.findViewById(R.id.tvStudentStatus);
+        btnPlaySantali = root.findViewById(R.id.btnPlaySantali);
+        ivPlaySantaliIcon = root.findViewById(R.id.ivPlaySantaliIcon);
+        tvPlaySantaliLabel = root.findViewById(R.id.tvPlaySantaliLabel);
 
+        // Engine Status
         tvEngineStatus = root.findViewById(R.id.tvEngineStatus);
+
+        // Ensure Ol Chiki local font is applied for Santali rendering
+        try {
+            Typeface olChikiTypeface = ResourcesCompat.getFont(requireContext(), R.font.noto_sans_ol_chiki);
+            if (olChikiTypeface != null) {
+                tvStudentTranslated.setTypeface(olChikiTypeface);
+                tvStudentStatus.setTypeface(olChikiTypeface);
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Error loading local Ol Chiki font resource", e);
+        }
+
+        audioRecorder = new AudioRecorder();
+        audioPlayer = new AudioPlayer();
+        voicePipelineManager = new VoicePipelineManager();
 
         setupControls();
         resetToIdle();
+
+        tvEngineStatus.setText("Initializing local offline AI pipeline (Whisper & IndicTrans2)...");
+        voicePipelineManager.initializeAsync(requireContext(), success -> {
+            if (isAdded()) {
+                if (success) {
+                    if (voicePipelineManager.getTtsManager().isAvailable()) {
+                        tvEngineStatus.setText("Offline AI Pipeline Ready (ASR, Translation & TTS)");
+                    } else {
+                        tvEngineStatus.setText("Offline AI Pipeline Ready (ASR & IndicTrans2 | TTS Unavailable)");
+                    }
+                } else {
+                    tvEngineStatus.setText(R.string.status_ready);
+                }
+            }
+        });
 
         return root;
     }
 
     private void setupControls() {
-        // Teacher Control: single button per role
+        // Teacher Microphone Control
         btnTeacherControl.setOnClickListener(v -> {
-            if (activeSpeaker == Role.STUDENT && isRecording) {
-                // When Student is speaking, Teacher control is the ear icon (listening role).
-                // "The ear icon must represent the receiving/listening role, not another microphone or recording action."
-                Toast.makeText(requireContext(), "Listening to student…", Toast.LENGTH_SHORT).show();
+            if (voicePipelineManager != null && voicePipelineManager.isBusy()) {
+                Toast.makeText(requireContext(), "AI pipeline is busy processing...", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            if (activeSpeaker == Role.TEACHER && isRecording) {
-                // Tapping active speaker microphone again stops recording
+            if (isRecording) {
+                // Tapping active microphone again stops recording and begins processing
                 stopRecordingAndProcess();
             } else {
-                // Tapping teacher's mic deactivates any other speaker and starts Teacher turn
-                onRoleMicTapped(Role.TEACHER);
+                if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.RECORD_AUDIO)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    permissionRequestedForRecording = true;
+                    requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO);
+                } else {
+                    startRecording();
+                }
             }
         });
 
-        // Student Control: single button per role
-        btnStudentControl.setOnClickListener(v -> {
-            if (activeSpeaker == Role.TEACHER && isRecording) {
-                // When Teacher is speaking, Student control is the ear icon (listening role).
-                // "The ear icon must represent the receiving/listening role, not another microphone or recording action."
-                Toast.makeText(requireContext(), "Listening to teacher…", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            if (activeSpeaker == Role.STUDENT && isRecording) {
-                // Tapping active speaker microphone again stops recording
-                stopRecordingAndProcess();
-            } else {
-                // Tapping student's mic deactivates any other speaker and starts Student turn
-                onRoleMicTapped(Role.STUDENT);
-            }
-        });
-    }
-
-    private void onRoleMicTapped(Role role) {
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED) {
-            pendingRolePermission = role;
-            requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO);
-            return;
-        }
-        startSpeaking(role);
-    }
-
-    /**
-     * Activates the speaker role and switches the receiver role into ear/listening mode.
-     */
-    private void startSpeaking(Role speaker) {
-        if (!isAdded()) return;
-
-        // Cancel any pending callbacks or animations
-        cancelAnimations();
-        stopSpeechRecognizer();
-
-        activeSpeaker = speaker;
-        isRecording = true;
-
-        int primaryColor = ThemeHelper.getThemeColor(requireContext(), R.attr.customPrimaryColor);
-        int cardTintColor = ThemeHelper.getThemeColor(requireContext(), R.attr.customCardTintColor);
-        int onPrimaryColor = ContextCompat.getColor(requireContext(), R.color.white);
-
-        if (speaker == Role.TEACHER) {
-            // 1. Teacher panel becomes active speaker with mic displayed in active state
-            ivTeacherControlIcon.setImageResource(R.drawable.ic_mic);
-            ivTeacherControlIcon.setImageTintList(ColorStateList.valueOf(onPrimaryColor));
-            btnTeacherControl.setCardBackgroundColor(primaryColor);
-            tvTeacherStatus.setText(R.string.recording_hindi);
-            badgeTeacherState.setText("Speaking");
-
-            startPulseAnimation(viewTeacherRipple);
-
-            // 2. Student panel automatically switches from microphone icon to ear/listening icon
-            ivStudentControlIcon.setImageResource(R.drawable.ic_ear);
-            ivStudentControlIcon.setImageTintList(ColorStateList.valueOf(primaryColor));
-            btnStudentControl.setCardBackgroundColor(cardTintColor);
-            viewStudentRipple.setVisibility(View.INVISIBLE);
-            tvStudentStatus.setText(R.string.listening_to_teacher);
-            badgeStudentState.setText("Listening");
-
-            tvEngineStatus.setText("Recording Teacher (Hindi) speech...");
-
-            // Initiate voice capture for Teacher (Hindi)
-            listenForSpeech("hi-IN", TwoWayTranslationHelper.getDefaultTeacherSample());
-
-        } else if (speaker == Role.STUDENT) {
-            // 1. Student panel becomes active speaker with mic displayed in active state
-            ivStudentControlIcon.setImageResource(R.drawable.ic_mic);
-            ivStudentControlIcon.setImageTintList(ColorStateList.valueOf(onPrimaryColor));
-            btnStudentControl.setCardBackgroundColor(primaryColor);
-            tvStudentStatus.setText(R.string.recording_santhali);
-            badgeStudentState.setText("Speaking");
-
-            startPulseAnimation(viewStudentRipple);
-
-            // 2. Teacher panel automatically switches from microphone icon to ear/listening icon
-            ivTeacherControlIcon.setImageResource(R.drawable.ic_ear);
-            ivTeacherControlIcon.setImageTintList(ColorStateList.valueOf(primaryColor));
-            btnTeacherControl.setCardBackgroundColor(cardTintColor);
-            viewTeacherRipple.setVisibility(View.INVISIBLE);
-            tvTeacherStatus.setText(R.string.listening_to_student);
-            badgeTeacherState.setText("Listening");
-
-            tvEngineStatus.setText("Recording Student (Santhali) speech...");
-
-            // Initiate voice capture for Student (Santhali)
-            listenForSpeech("sat-IN", TwoWayTranslationHelper.getDefaultStudentSample());
-        }
-    }
-
-    private void listenForSpeech(String languageCode, String fallbackUtterance) {
-        Context context = getContext();
-        if (context == null) return;
-
-        boolean speechRecognizerAvailable = SpeechRecognizer.isRecognitionAvailable(context);
-
-        if (speechRecognizerAvailable) {
-            try {
-                speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context);
-                Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, languageCode);
-                intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
-
-                speechRecognizer.setRecognitionListener(new RecognitionListener() {
-                    @Override public void onReadyForSpeech(Bundle params) {}
-                    @Override public void onBeginningOfSpeech() {}
-                    @Override public void onRmsChanged(float rmsdB) {}
-                    @Override public void onBufferReceived(byte[] buffer) {}
-                    @Override public void onEndOfSpeech() {}
-
+        // Santali Audio Playback button
+        btnPlaySantali.setOnClickListener(v -> {
+            if (currentOutputAudioFile != null && currentOutputAudioFile.exists() && currentOutputAudioFile.length() > 44) {
+                audioPlayer.play(currentOutputAudioFile, new AudioPlayer.PlaybackCallback() {
                     @Override
-                    public void onError(int error) {
-                        // If live speech service fails or runs in emulator, fallback to verified classroom sample
-                        handleSpeechCaptured(fallbackUtterance);
-                    }
-
-                    @Override
-                    public void onResults(Bundle results) {
-                        ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-                        if (matches != null && !matches.isEmpty()) {
-                            handleSpeechCaptured(matches.get(0));
-                        } else {
-                            handleSpeechCaptured(fallbackUtterance);
+                    public void onPlaybackStarted() {
+                        if (isAdded()) {
+                            tvPlaySantaliLabel.setText("Playing Santali audio...");
+                            tvStudentStatus.setText("Playing Santali audio...");
+                            badgeStudentState.setText("Playing");
                         }
                     }
 
-                    @Override public void onPartialResults(Bundle partialResults) {}
-                    @Override public void onEvent(int eventType, Bundle params) {}
+                    @Override
+                    public void onPlaybackCompleted() {
+                        if (isAdded()) {
+                            tvPlaySantaliLabel.setText(R.string.speech_ready);
+                            tvStudentStatus.setText(R.string.speech_ready);
+                            badgeStudentState.setText("Ready");
+                        }
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        if (isAdded()) {
+                            tvPlaySantaliLabel.setText(R.string.speech_ready);
+                            tvStudentStatus.setText("Playback error.");
+                            badgeStudentState.setText("Ready");
+                        }
+                    }
                 });
-
-                speechRecognizer.startListening(intent);
-                return;
-            } catch (Exception e) {
-                // Fallback to verified classroom sample
+            } else {
+                Toast.makeText(requireContext(), "Santali TTS audio unavailable.", Toast.LENGTH_SHORT).show();
             }
-        }
-
-        // Standard educational demo: capture speech after listening duration
-        handler.postDelayed(() -> {
-            if (isRecording && isAdded()) {
-                handleSpeechCaptured(fallbackUtterance);
-            }
-        }, 2000);
-    }
-
-    private void stopRecordingAndProcess() {
-        if (!isRecording) return;
-        stopSpeechRecognizer();
-        cancelAnimations();
-
-        String sample = (activeSpeaker == Role.TEACHER)
-                ? TwoWayTranslationHelper.getDefaultTeacherSample()
-                : TwoWayTranslationHelper.getDefaultStudentSample();
-        handleSpeechCaptured(sample);
+        });
     }
 
     /**
-     * Processes captured speech through the verified TwoWayTranslationHelper
-     * and triggers audio playback integration.
+     * Starts recording Hindi speech from the microphone.
      */
-    private void handleSpeechCaptured(String speechText) {
+    private void startRecording() {
         if (!isAdded()) return;
 
         cancelAnimations();
-        stopSpeechRecognizer();
-        isRecording = false;
+        isRecording = true;
+        currentOutputAudioFile = null;
 
-        final Role currentSpeaker = activeSpeaker;
-        if (currentSpeaker == Role.NONE) return;
+        int primaryColor = ThemeHelper.getThemeColor(requireContext(), R.attr.customPrimaryColor);
+        int onPrimaryColor = ContextCompat.getColor(requireContext(), R.color.white);
+
+        ivTeacherControlIcon.setImageResource(R.drawable.ic_mic);
+        ivTeacherControlIcon.setImageTintList(ColorStateList.valueOf(onPrimaryColor));
+        btnTeacherControl.setCardBackgroundColor(primaryColor);
+        tvTeacherStatus.setText(R.string.recording_hindi);
+        badgeTeacherState.setText("Listening");
+
+        startPulseAnimation(viewTeacherRipple);
+
+        // Reset student result view for new recording
+        tvStudentStatus.setText(R.string.placeholder_awaiting_translation);
+        badgeStudentState.setText("Waiting");
+        setPlayButtonEnabled(false);
+
+        tvEngineStatus.setText("Recording Hindi speech...");
+
+        File cacheDir = requireContext().getCacheDir();
+        File inputWav = new File(cacheDir, "recorded_speech_" + System.currentTimeMillis() + ".wav");
+
+        audioRecorder.startRecording(inputWav, new AudioRecorder.RecordingCallback() {
+            @Override public void onRecordingStarted() {
+                Log.i(TAG, "Audio recording started: " + inputWav.getAbsolutePath());
+            }
+            @Override public void onRecordingStopped(File outputFile) {
+                Log.i(TAG, "Audio recording stopped: " + outputFile.getAbsolutePath());
+            }
+            @Override public void onError(String errorMessage) {
+                Log.e(TAG, "Audio recording error: " + errorMessage);
+                if (isAdded()) {
+                    Toast.makeText(requireContext(), "Recording error: " + errorMessage, Toast.LENGTH_SHORT).show();
+                    resetToIdle();
+                }
+            }
+        });
+    }
+
+    /**
+     * Stops recording and feeds the captured audio into the offline AI pipeline.
+     */
+    private void stopRecordingAndProcess() {
+        if (!isRecording) return;
+        isRecording = false;
+        cancelAnimations();
+
+        audioRecorder.stopRecording();
 
         Context context = getContext();
-        if (context == null) return;
+        if (context == null) {
+            resetToIdle();
+            return;
+        }
 
-        if (currentSpeaker == Role.TEACHER) {
-            tvTeacherStatus.setText(R.string.translating_to_santhali);
-            badgeTeacherState.setText("Translating");
+        File cacheDir = context.getCacheDir();
+        File[] wavFiles = cacheDir.listFiles((dir, name) -> name.startsWith("recorded_speech_") && name.endsWith(".wav"));
+        File latestWav = null;
+        if (wavFiles != null && wavFiles.length > 0) {
+            for (File f : wavFiles) {
+                if (latestWav == null || f.lastModified() > latestWav.lastModified()) {
+                    latestWav = f;
+                }
+            }
+        }
 
-            TwoWayTranslationHelper.translateTeacherToSanthali(context, speechText, result -> {
-                handler.post(() -> {
+        tvTeacherStatus.setText(R.string.understanding_hindi);
+        badgeTeacherState.setText("ASR");
+        tvEngineStatus.setText(R.string.understanding_hindi);
+
+        File outputTtsFile = new File(cacheDir, "tts_output_" + System.currentTimeMillis() + ".wav");
+
+        if (latestWav != null && latestWav.exists() && latestWav.length() > 44) {
+            // Process captured audio through local offline Whisper ASR and IndicTrans2
+            voicePipelineManager.processAsync(latestWav, outputTtsFile, new VoicePipelineManager.PipelineCallback() {
+                @Override
+                public void onProgress(String stageMessage) {
+                    if (!isAdded()) return;
+                    tvEngineStatus.setText(stageMessage);
+                    if (stageMessage.contains("Translating")) {
+                        tvTeacherStatus.setText(R.string.translating_to_santhali);
+                        badgeTeacherState.setText("Translating");
+                        badgeStudentState.setText("Translating");
+                    }
+                }
+
+                @Override
+                public void onComplete(PipelineResult result) {
                     if (!isAdded()) return;
 
-                    if (result.isSuccess) {
-                        // 3. Spoken Hindi is recognized and displayed in Teacher panel's recognized-text box
-                        tvTeacherRecognized.setText(result.originalText);
+                    if (result.isSuccess && result.recognizedHindiText != null && !result.recognizedHindiText.trim().isEmpty()) {
+                        // 1. Display recognized Hindi Unicode
+                        tvTeacherRecognized.setText(result.recognizedHindiText);
 
-                        // 4. Translated Santhali text is displayed in Student panel's translation box
-                        tvStudentTranslated.setText(result.translatedText);
+                        // 2. Display translated Santali Ol Chiki Unicode
+                        tvStudentTranslated.setText(result.translatedSantaliText);
 
-                        // 6. Update statuses
                         tvTeacherStatus.setText(R.string.status_ready);
                         badgeTeacherState.setText("Done");
 
-                        tvStudentStatus.setText(R.string.playing_santhali_audio);
-                        badgeStudentState.setText("Playing");
-                        tvEngineStatus.setText("Translated to Santhali. Playing audio...");
-
-                        // 5. Student hears translated Santhali audio through existing audio-processing integration
-                        AudioHelper.playPronunciation(requireContext(), result.translatedText, new AudioHelper.AudioPlaybackCallback() {
-                            @Override
-                            public void onPlaybackStarted() {
-                                if (isAdded()) {
-                                    tvStudentStatus.setText(R.string.playing_santhali_audio);
-                                }
-                            }
-
-                            @Override
-                            public void onPlaybackCompleted() {
-                                if (isAdded()) {
-                                    handler.postDelayed(() -> resetToIdle(), 1200);
-                                }
-                            }
-                        });
+                        // 3. Audio synthesis status
+                        if (result.outputAudioFile != null && result.outputAudioFile.exists() && result.outputAudioFile.length() > 44) {
+                            currentOutputAudioFile = result.outputAudioFile;
+                            tvStudentStatus.setText(R.string.speech_ready);
+                            tvPlaySantaliLabel.setText(R.string.speech_ready);
+                            badgeStudentState.setText("Ready");
+                            setPlayButtonEnabled(true);
+                            tvEngineStatus.setText("Speech ready. Tap Play to listen.");
+                        } else {
+                            currentOutputAudioFile = null;
+                            tvStudentStatus.setText("Text translation ready (TTS unavailable)");
+                            tvPlaySantaliLabel.setText("Play Santali Speech");
+                            badgeStudentState.setText("Ready");
+                            setPlayButtonEnabled(false);
+                            tvEngineStatus.setText("Text translation ready (TTS unavailable)");
+                        }
                     } else {
-                        // Error handling: do not display fabricated translations or pretend audio played
-                        tvTeacherStatus.setText(R.string.translation_unavailable);
-                        tvEngineStatus.setText(result.errorMessage != null ? result.errorMessage : "Translation unavailable.");
-                        resetToIdleDelayed(2500);
+                        // Error handling: do not fabricate translations or return raw errors
+                        tvTeacherStatus.setText(R.string.asr_failed);
+                        badgeTeacherState.setText("Failed");
+                        tvStudentStatus.setText(R.string.translation_failed);
+                        badgeStudentState.setText("Failed");
+                        tvEngineStatus.setText(result.errorMessage != null ? result.errorMessage : "Could not understand the recording.");
+                        resetToIdleDelayed(3000);
                     }
-                });
+                }
             });
+        } else {
+            tvTeacherStatus.setText(R.string.no_speech_detected);
+            resetToIdleDelayed(2500);
+        }
+    }
 
-        } else if (currentSpeaker == Role.STUDENT) {
-            tvStudentStatus.setText(R.string.translating_to_hindi);
-            badgeStudentState.setText("Translating");
-
-            TwoWayTranslationHelper.translateStudentToHindi(context, speechText, result -> {
-                handler.post(() -> {
-                    if (!isAdded()) return;
-
-                    if (result.isSuccess) {
-                        // 3. Spoken Santhali is recognized and displayed in Student panel's recognized-text box
-                        tvStudentRecognized.setText(result.originalText);
-
-                        // 4. Translated Hindi text is displayed in Teacher panel's translation box
-                        tvTeacherTranslated.setText(result.translatedText);
-
-                        // 6. Update statuses
-                        tvStudentStatus.setText(R.string.status_ready);
-                        badgeStudentState.setText("Done");
-
-                        tvTeacherStatus.setText(R.string.playing_hindi_audio);
-                        badgeTeacherState.setText("Playing");
-                        tvEngineStatus.setText("Translated to Hindi. Playing audio...");
-
-                        // 5. Teacher hears translated Hindi audio through existing audio-processing integration
-                        AudioHelper.playPronunciation(requireContext(), result.translatedText, new AudioHelper.AudioPlaybackCallback() {
-                            @Override
-                            public void onPlaybackStarted() {
-                                if (isAdded()) {
-                                    tvTeacherStatus.setText(R.string.playing_hindi_audio);
-                                }
-                            }
-
-                            @Override
-                            public void onPlaybackCompleted() {
-                                if (isAdded()) {
-                                    handler.postDelayed(() -> resetToIdle(), 1200);
-                                }
-                            }
-                        });
-                    } else {
-                        // Error handling: do not display fabricated translations or pretend audio played
-                        tvStudentStatus.setText(R.string.translation_unavailable);
-                        tvEngineStatus.setText(result.errorMessage != null ? result.errorMessage : "Translation unavailable.");
-                        resetToIdleDelayed(2500);
-                    }
-                });
-            });
+    private void setPlayButtonEnabled(boolean enabled) {
+        if (!isAdded() || btnPlaySantali == null) return;
+        btnPlaySantali.setEnabled(enabled);
+        if (enabled) {
+            int primaryColor = ThemeHelper.getThemeColor(requireContext(), R.attr.customPrimaryColor);
+            btnPlaySantali.setCardBackgroundColor(primaryColor);
+            tvPlaySantaliLabel.setTextColor(ContextCompat.getColor(requireContext(), R.color.white));
+            ivPlaySantaliIcon.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.white)));
+        } else {
+            int disabledBg = ThemeHelper.getThemeColor(requireContext(), R.attr.customBorderColor);
+            int disabledText = ThemeHelper.getThemeColor(requireContext(), R.attr.customTextSecondaryColor);
+            btnPlaySantali.setCardBackgroundColor(disabledBg);
+            tvPlaySantaliLabel.setTextColor(disabledText);
+            ivPlaySantaliIcon.setImageTintList(ColorStateList.valueOf(disabledText));
         }
     }
 
@@ -424,21 +378,21 @@ public class VoiceTranslationFragment extends Fragment {
     }
 
     /**
-     * Resets both panels to the idle ready state with their respective microphone controls.
+     * Resets the interface to the idle ready state.
      */
     private void resetToIdle() {
         if (!isAdded()) return;
 
-        activeSpeaker = Role.NONE;
         isRecording = false;
-
         cancelAnimations();
-        stopSpeechRecognizer();
+
+        if (audioRecorder != null) {
+            audioRecorder.stopRecording();
+        }
 
         int primaryColor = ThemeHelper.getThemeColor(requireContext(), R.attr.customPrimaryColor);
         int onPrimaryColor = ContextCompat.getColor(requireContext(), R.color.white);
 
-        // Teacher Control: resets to microphone
         ivTeacherControlIcon.setImageResource(R.drawable.ic_mic);
         ivTeacherControlIcon.setImageTintList(ColorStateList.valueOf(onPrimaryColor));
         btnTeacherControl.setCardBackgroundColor(primaryColor);
@@ -446,27 +400,35 @@ public class VoiceTranslationFragment extends Fragment {
         tvTeacherStatus.setText(R.string.tap_to_speak_hindi);
         badgeTeacherState.setText("Ready");
 
-        // Student Control: resets to microphone
-        ivStudentControlIcon.setImageResource(R.drawable.ic_mic);
-        ivStudentControlIcon.setImageTintList(ColorStateList.valueOf(onPrimaryColor));
-        btnStudentControl.setCardBackgroundColor(primaryColor);
-        viewStudentRipple.setVisibility(View.INVISIBLE);
-        tvStudentStatus.setText(R.string.tap_to_speak_santhali);
-        badgeStudentState.setText("Ready");
+        if (badgeStudentState.getText().toString().equals("Waiting")) {
+            badgeStudentState.setText("Ready");
+        }
 
-        tvEngineStatus.setText(R.string.status_ready);
+        if (voicePipelineManager != null && voicePipelineManager.isInitialized()) {
+            if (voicePipelineManager.getTtsManager().isAvailable()) {
+                tvEngineStatus.setText("Offline AI Pipeline Ready (ASR, Translation & TTS)");
+            } else {
+                tvEngineStatus.setText("Offline AI Pipeline Ready (ASR & IndicTrans2 | TTS Unavailable)");
+            }
+        } else {
+            tvEngineStatus.setText(R.string.status_ready);
+        }
     }
 
     private void startPulseAnimation(View rippleView) {
         rippleView.setVisibility(View.VISIBLE);
-        pulseAnimator = ObjectAnimator.ofPropertyValuesHolder(
-                rippleView,
-                PropertyValuesHolder.ofFloat(View.SCALE_X, 1.0f, 1.35f, 1.0f),
-                PropertyValuesHolder.ofFloat(View.SCALE_Y, 1.0f, 1.35f, 1.0f),
-                PropertyValuesHolder.ofFloat(View.ALPHA, 0.4f, 0.9f, 0.4f)
-        );
-        pulseAnimator.setDuration(900);
+        if (pulseAnimator != null && pulseAnimator.isRunning()) {
+            pulseAnimator.cancel();
+        }
+
+        PropertyValuesHolder scaleX = PropertyValuesHolder.ofFloat(View.SCALE_X, 1.0f, 1.45f);
+        PropertyValuesHolder scaleY = PropertyValuesHolder.ofFloat(View.SCALE_Y, 1.0f, 1.45f);
+        PropertyValuesHolder alpha = PropertyValuesHolder.ofFloat(View.ALPHA, 0.6f, 0.0f);
+
+        pulseAnimator = ObjectAnimator.ofPropertyValuesHolder(rippleView, scaleX, scaleY, alpha);
+        pulseAnimator.setDuration(1000);
         pulseAnimator.setRepeatCount(ObjectAnimator.INFINITE);
+        pulseAnimator.setRepeatMode(ObjectAnimator.RESTART);
         pulseAnimator.start();
     }
 
@@ -479,24 +441,18 @@ public class VoiceTranslationFragment extends Fragment {
             viewTeacherRipple.setVisibility(View.INVISIBLE);
             viewTeacherRipple.setScaleX(1.0f);
             viewTeacherRipple.setScaleY(1.0f);
-            viewTeacherRipple.setAlpha(0.4f);
-        }
-        if (viewStudentRipple != null) {
-            viewStudentRipple.setVisibility(View.INVISIBLE);
-            viewStudentRipple.setScaleX(1.0f);
-            viewStudentRipple.setScaleY(1.0f);
-            viewStudentRipple.setAlpha(0.4f);
+            viewTeacherRipple.setAlpha(1.0f);
         }
     }
 
-    private void stopSpeechRecognizer() {
-        if (speechRecognizer != null) {
-            try {
-                speechRecognizer.stopListening();
-                speechRecognizer.cancel();
-                speechRecognizer.destroy();
-            } catch (Exception ignored) {}
-            speechRecognizer = null;
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (audioRecorder != null && audioRecorder.isRecording()) {
+            audioRecorder.stopRecording();
+        }
+        if (audioPlayer != null && audioPlayer.isPlaying()) {
+            audioPlayer.stop();
         }
     }
 
@@ -504,7 +460,18 @@ public class VoiceTranslationFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         cancelAnimations();
-        stopSpeechRecognizer();
         handler.removeCallbacksAndMessages(null);
+        if (audioRecorder != null) {
+            audioRecorder.release();
+            audioRecorder = null;
+        }
+        if (audioPlayer != null) {
+            audioPlayer.release();
+            audioPlayer = null;
+        }
+        if (voicePipelineManager != null) {
+            voicePipelineManager.close();
+            voicePipelineManager = null;
+        }
     }
 }

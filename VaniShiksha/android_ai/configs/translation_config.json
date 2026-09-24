@@ -1,0 +1,21 @@
+{
+  "model_name": "indictrans2-indic-indic-dist-320M-ONNX-int8",
+  "source_lang": "hin_Deva",
+  "target_lang": "sat_Olck",
+  "source_dict_size": 256000,
+  "target_dict_size": 256000,
+  "unk_token_id": 3,
+  "bos_token_id": 0,
+  "pad_token_id": 1,
+  "eos_token_id": 2,
+  "decoder_start_token_id": 2,
+  "max_source_positions": 256,
+  "max_target_positions": 256,
+  "num_layers": 18,
+  "hidden_size": 1024,
+  "encoder_attention_heads": 16,
+  "decoder_attention_heads": 16,
+  "prefix_template": "{src_code} {tgt_code} {text}",
+  "android_runtime": "onnxruntime-android",
+  "quantization": "int8_weight_only"
+}
