@@ -89,6 +89,21 @@ public class TwoWayTranslationHelper {
         addPair("सेब", "ᱟᱯᱮᱞ");
         addPair("पानी", "ᱫᱟᱜ");
         addPair("पेड़", "ᱫᱟᱨᱮ");
+        addPair("पौधा", "ᱫᱟᱨᱮ");
+        addPair("पौधे", "ᱫᱟᱨᱮᱠᱚ");
+        addPair("जड़", "ᱨᱮᱦᱮᱫ");
+        addPair("तना", "ᱰᱟᱹᱨ");
+        addPair("पत्ती", "ᱥᱟᱠᱟᱢ");
+        addPair("पत्तियाँ", "ᱥᱟᱠᱟᱢᱠᱚ");
+        addPair("फूल", "ᱵᱟᱦᱟ");
+        addPair("फल", "ᱡᱚ");
+        addPair("जानवर", "ᱡᱤᱭᱟᱹᱞᱤ");
+        addPair("जल", "ᱫᱟᱜ");
+        addPair("जोड़", "ᱡᱚᱲᱟᱣ");
+        addPair("घटाव", "ᱵᱷᱮᱜᱟᱨ");
+        addPair("मेरा भारत महान है", "ᱤᱧᱟᱜ ᱵᱷᱟᱨᱚᱛ ᱢᱟᱨᱟᱝ ᱜᱮᱭᱟ");
+        addPair("पौधे हमारे लिए बहुत महत्वपूर्ण हैं", "ᱫᱟᱨᱮᱠᱚ ᱟᱵᱚ ᱞᱟᱹᱜᱤᱫ ᱟᱹᱰᱤ ᱞᱟᱹᱠᱛᱤᱭᱟᱱ ᱠᱟᱱᱟ");
+        addPair("पानी जीवन के लिए आवश्यक है", "ᱫᱟᱜ ᱫᱚ ᱡᱤᱭᱚᱱ ᱞᱟᱹᱜᱤᱫ ᱞᱟᱹᱠᱛᱤᱭᱟᱱ ᱠᱟᱱᱟ");
         addPair("घर", "ᱚᱲᱟᱜ");
         addPair("स्कूल", "ᱟᱥᱲᱟ");
         addPair("विद्यालय", "ᱟᱥᱲᱟ");
@@ -114,6 +129,14 @@ public class TwoWayTranslationHelper {
 
     public static String getVerifiedTranslation(String hindi) {
         return HINDI_TO_SANTHALI.get(normalize(hindi));
+    }
+
+    public static boolean hasVerifiedSantaliTranslation(String santhali) {
+        return SANTHALI_TO_HINDI.containsKey(normalize(santhali));
+    }
+
+    public static String getVerifiedSantaliTranslation(String santhali) {
+        return SANTHALI_TO_HINDI.get(normalize(santhali));
     }
 
     public static String normalize(String text) {
@@ -178,10 +201,14 @@ public class TwoWayTranslationHelper {
             if (translated == null) {
                 try {
                     TranslationManager tm = getTranslationManager(context);
-                    if (tm != null && LANG_HINDI.equals(sourceLang) && LANG_SANTHALI.equals(targetLang)) {
-                        String neuralResult = tm.translate(cleanInput);
-                        if (neuralResult != null && !neuralResult.trim().isEmpty() && !neuralResult.contains("<unk>")) {
-                            translated = neuralResult.trim();
+                    if (tm != null) {
+                        boolean isHtoS = LANG_HINDI.equals(sourceLang) && LANG_SANTHALI.equals(targetLang);
+                        boolean isStoH = LANG_SANTHALI.equals(sourceLang) && LANG_HINDI.equals(targetLang);
+                        if (isHtoS || isStoH) {
+                            String neuralResult = tm.translate(cleanInput, isHtoS);
+                            if (neuralResult != null && !neuralResult.trim().isEmpty() && !neuralResult.contains("<unk>")) {
+                                translated = neuralResult.trim();
+                            }
                         }
                     }
                 } catch (Exception ignored) {

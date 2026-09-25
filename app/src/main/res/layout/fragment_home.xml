@@ -156,39 +156,96 @@
                         android:paddingHorizontal="18dp"
                         android:paddingVertical="16dp">
 
-                        <TextView
-                            android:layout_width="wrap_content"
+                        <!-- Header with Direction Indicator and Swap Button -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:letterSpacing="0.04"
-                            android:text="@string/current_language_pair"
-                            android:textColor="?attr/customPrimaryColor"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
 
-                        <!-- Hindi → Santhali संथाली -->
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:letterSpacing="0.04"
+                                android:text="@string/current_language_pair"
+                                android:textColor="?attr/customPrimaryColor"
+                                android:textSize="11sp"
+                                android:textStyle="bold" />
+
+                            <!-- Direction Swap Pill Button -->
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/btnHomeSwapDirection"
+                                android:layout_width="wrap_content"
+                                android:layout_height="30dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                app:cardBackgroundColor="?attr/customPrimaryColor"
+                                app:cardCornerRadius="15dp"
+                                app:cardElevation="1dp"
+                                app:strokeColor="@android:color/transparent">
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="match_parent"
+                                    android:gravity="center"
+                                    android:orientation="horizontal"
+                                    android:paddingHorizontal="10dp">
+
+                                    <ImageView
+                                        android:layout_width="14dp"
+                                        android:layout_height="14dp"
+                                        android:contentDescription="Swap Direction"
+                                        android:src="@drawable/ic_swap"
+                                        app:tint="@color/white" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="4dp"
+                                        android:text="दिशा बदलें"
+                                        android:textColor="@color/white"
+                                        android:textSize="11sp"
+                                        android:textStyle="bold" />
+                                </LinearLayout>
+                            </com.google.android.material.card.MaterialCardView>
+                        </LinearLayout>
+
+                        <!-- Active Direction Display: e.g. Hindi (हिंदी) ➔ Santali (संथाली) -->
                         <TextView
                             android:id="@+id/tvLanguagePairDisplay"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:text="@string/lang_pair_hindi_santhali"
+                            android:text="हिंदी (Hindi) ➔ संथाली (Santali)"
                             android:textColor="?attr/customTextColor"
-                            android:textSize="18sp"
+                            android:textSize="17sp"
+                            android:textStyle="bold" />
+
+                        <!-- Detailed Input / Output indicator -->
+                        <TextView
+                            android:id="@+id/tvLanguageDirectionDetails"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="इनपुट: हिंदी (Teacher)  •  आउटपुट: संथाली (Student)"
+                            android:textColor="?attr/customTextSecondaryColor"
+                            android:textSize="12sp"
                             android:textStyle="bold" />
 
                         <!-- CHANGE LANGUAGE Button -->
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnChangeLanguage"
                             android:layout_width="match_parent"
-                            android:layout_height="48dp"
-                            android:layout_marginTop="14dp"
+                            android:layout_height="46dp"
+                            android:layout_marginTop="12dp"
                             android:backgroundTint="?attr/customPrimaryColor"
                             android:text="@string/btn_change_language"
                             android:textAllCaps="true"
                             android:textColor="@color/white"
                             android:textSize="13sp"
                             android:textStyle="bold"
-                            app:cornerRadius="24dp"
+                            app:cornerRadius="23dp"
                             app:elevation="0dp" />
 
                         <TextView
@@ -385,6 +442,291 @@
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
+
+                <!-- 6. "Recent Study Material" Dashboard Section -->
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="26dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:text="Recent Study Material"
+                        android:textColor="?attr/customTextColor"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvViewAllCurriculum"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="4dp"
+                        android:text="Curriculum ➔"
+                        android:textColor="?attr/customPrimaryColor"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                </RelativeLayout>
+
+                <!-- Recent Item 1: Plants Around Us (Class 3 • EVS) -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardRecentStudyPlants"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardBackgroundColor="?attr/customCardColor"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="1dp"
+                    app:strokeColor="?attr/customBorderColor"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="14dp">
+
+                        <TextView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="@drawable/bg_tab_unselected"
+                            android:gravity="center"
+                            android:text="📘"
+                            android:textSize="20sp" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Plants Around Us"
+                                android:textColor="?attr/customTextColor"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="Class 3 • EVS • Study Material &amp; Concepts"
+                                android:textColor="?attr/customTextSecondaryColor"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Open ➔"
+                            android:textColor="?attr/customPrimaryColor"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Recent Item 2: Addition Practice (Class 3 • Mathematics) -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardRecentWorksheetMath"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardBackgroundColor="?attr/customCardColor"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="1dp"
+                    app:strokeColor="?attr/customBorderColor"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="14dp">
+
+                        <TextView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="@drawable/bg_tab_unselected"
+                            android:gravity="center"
+                            android:text="📄"
+                            android:textSize="20sp" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Numbers and Addition Practice"
+                                android:textColor="?attr/customTextColor"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="Class 3 • Mathematics • Interactive Worksheet"
+                                android:textColor="?attr/customTextSecondaryColor"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Solve ➔"
+                            android:textColor="?attr/customPrimaryColor"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Recent Item 3: Plant Flashcards (10 cards) -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardRecentFlashcardsPlant"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardBackgroundColor="?attr/customCardColor"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="1dp"
+                    app:strokeColor="?attr/customBorderColor"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="14dp">
+
+                        <TextView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="@drawable/bg_tab_unselected"
+                            android:gravity="center"
+                            android:text="🍎"
+                            android:textSize="20sp" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Plant Flashcards"
+                                android:textColor="?attr/customTextColor"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="10 Cards • Flip &amp; Bilingual Audio"
+                                android:textColor="?attr/customTextSecondaryColor"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Flip ➔"
+                            android:textColor="?attr/customPrimaryColor"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Recent Item 4: My Resources -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardRecentMyResources"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardBackgroundColor="?attr/customCardColor"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="1dp"
+                    app:strokeColor="?attr/customBorderColor"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="14dp">
+
+                        <TextView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="@drawable/bg_tab_unselected"
+                            android:gravity="center"
+                            android:text="📁"
+                            android:textSize="20sp" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="My Resources"
+                                android:textColor="?attr/customTextColor"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="Custom teacher notes &amp; offline PDF materials"
+                                android:textColor="?attr/customTextSecondaryColor"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="View ➔"
+                            android:textColor="?attr/customPrimaryColor"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>

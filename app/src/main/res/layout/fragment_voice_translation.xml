@@ -68,44 +68,93 @@
             android:paddingTop="4dp"
             android:paddingBottom="24dp">
 
-            <!-- Translation Direction Banner -->
+            <!-- Interactive Translation Direction Banner & Swap Control -->
             <LinearLayout
+                android:id="@+id/bannerDirectionContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_pill_secondary"
-                android:gravity="center"
+                android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:paddingHorizontal="14dp"
                 android:paddingVertical="8dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Teacher (Hindi)"
-                    android:textColor="?attr/customTextColor"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="10dp"
-                    android:text="➔"
-                    android:textColor="?attr/customPrimaryColor"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
+                    <TextView
+                        android:id="@+id/tvDirectionInputText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Teacher • Hindi (हिंदी)"
+                        android:textColor="?attr/customTextColor"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
 
-                <TextView
+                    <TextView
+                        android:id="@+id/tvDirectionArrow"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="6dp"
+                        android:text="➔"
+                        android:textColor="?attr/customPrimaryColor"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvDirectionOutputText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Student • Santali (संथाली)"
+                        android:textColor="?attr/customPrimaryColor"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Direction Swap Button -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnSwapDirection"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Student (Santali)"
-                    android:textColor="?attr/customPrimaryColor"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
+                    android:layout_height="32dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardBackgroundColor="?attr/customPrimaryColor"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="1dp"
+                    app:strokeColor="@android:color/transparent">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="10dp">
+
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:contentDescription="Swap Direction"
+                            android:src="@drawable/ic_swap"
+                            app:tint="@color/white" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:text="बदलें"
+                            android:textColor="@color/white"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
             <!-- ============================================================== -->
-            <!-- 1. TEACHER SECTION (Hindi Speech & Recognition)                -->
+            <!-- 1. TEACHER SECTION (Speech & Recognition Input)                 -->
             <!-- ============================================================== -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardTeacherPanel"
@@ -132,10 +181,11 @@
                         android:orientation="horizontal">
 
                         <TextView
+                            android:id="@+id/tvTeacherPanelTitle"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="@string/role_teacher"
+                            android:text="Teacher (शिक्षक) • Hindi"
                             android:textColor="?attr/customTextColor"
                             android:textSize="15sp"
                             android:textStyle="bold" />
@@ -228,6 +278,7 @@
                             android:padding="12dp">
 
                             <TextView
+                                android:id="@+id/tvTeacherInputLabel"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/label_recognized_hindi"
@@ -235,11 +286,12 @@
                                 android:textSize="11sp"
                                 android:textStyle="bold" />
 
-                            <TextView
+                            <EditText
                                 android:id="@+id/tvTeacherRecognized"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
+                                android:background="@null"
                                 android:hint="@string/placeholder_awaiting_speech"
                                 android:textColor="?attr/customTextColor"
                                 android:textColorHint="?attr/customTextSecondaryColor"
@@ -247,6 +299,20 @@
                                 android:textStyle="bold" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
+
+                    <!-- TRANSLATE Action Button -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnTranslate"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:layout_marginTop="10dp"
+                        android:backgroundTint="?attr/customPrimaryColor"
+                        android:text="TRANSLATE"
+                        android:textAllCaps="true"
+                        android:textColor="@color/white"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        app:cornerRadius="22dp" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -266,6 +332,7 @@
                     android:background="?attr/customBorderColor" />
 
                 <TextView
+                    android:id="@+id/tvFlowDividerText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="12dp"
@@ -311,10 +378,11 @@
                         android:orientation="horizontal">
 
                         <TextView
+                            android:id="@+id/tvStudentPanelTitle"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="@string/role_student"
+                            android:text="Student (छात्र) • Santali"
                             android:textColor="?attr/customTextColor"
                             android:textSize="15sp"
                             android:textStyle="bold" />
@@ -350,6 +418,7 @@
                             android:padding="12dp">
 
                             <TextView
+                                android:id="@+id/tvStudentOutputLabel"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/label_translation_santhali"
@@ -442,6 +511,81 @@
                 android:text="@string/status_ready"
                 android:textColor="?attr/customTextSecondaryColor"
                 android:textSize="12sp" />
+
+            <!-- TRANSLATION PERFORMANCE CARD -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardPerformance"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="?attr/customCardColor"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeColor="?attr/customBorderColor"
+                app:strokeWidth="1.5dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="14dp">
+
+                    <!-- Header: TRANSLATION PERFORMANCE -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:letterSpacing="0.08"
+                        android:text="TRANSLATION PERFORMANCE"
+                        android:textColor="?attr/customPrimaryColor"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <!-- Main Elapsed Time Value: e.g. 2.84 s -->
+                    <TextView
+                        android:id="@+id/tvPerformanceTime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="--.-- s"
+                        android:textColor="?attr/customTextColor"
+                        android:textSize="26sp"
+                        android:textStyle="bold" />
+
+                    <!-- Description / Status -->
+                    <TextView
+                        android:id="@+id/tvPerformanceDesc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Time will appear after translation"
+                        android:textColor="?attr/customTextSecondaryColor"
+                        android:textSize="12sp" />
+
+                    <!-- Breakdown (ASR, Translation, Total) -->
+                    <TextView
+                        android:id="@+id/tvPerformanceBreakdown"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:textColor="?attr/customTextSecondaryColor"
+                        android:textSize="11sp"
+                        android:visibility="gone" />
+
+                    <!-- Recent Performance History (last 3 times) -->
+                    <TextView
+                        android:id="@+id/tvPerformanceHistory"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:textColor="?attr/customTextSecondaryColor"
+                        android:textSize="10sp"
+                        android:visibility="gone" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
     </ScrollView>

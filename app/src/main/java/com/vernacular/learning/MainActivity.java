@@ -5,8 +5,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.vernacular.learning.ui.curriculum.CurriculumFragment;
 import com.vernacular.learning.ui.home.HomeFragment;
-import com.vernacular.learning.ui.materials.MaterialsFragment;
 import com.vernacular.learning.ui.settings.SettingsFragment;
 import com.vernacular.learning.ui.worksheets.WorksheetsFragment;
 import com.vernacular.learning.utils.ThemeHelper;
@@ -32,9 +32,11 @@ public class MainActivity extends AppCompatActivity {
             if (itemId == R.id.nav_home) {
                 selectedFragment = new HomeFragment();
             } else if (itemId == R.id.nav_lessons) {
-                selectedFragment = new WorksheetsFragment();
+                // Curriculum Module
+                selectedFragment = new CurriculumFragment();
             } else if (itemId == R.id.nav_materials) {
-                selectedFragment = new MaterialsFragment();
+                // Worksheets Module
+                selectedFragment = new WorksheetsFragment();
             } else if (itemId == R.id.nav_settings) {
                 selectedFragment = new SettingsFragment();
             }
@@ -57,6 +59,20 @@ public class MainActivity extends AppCompatActivity {
             int savedTab = savedInstanceState.getInt(KEY_SELECTED_TAB, R.id.nav_home);
             bottomNav.setSelectedItemId(savedTab);
         }
+
+        getOnBackPressedDispatcher().addCallback(this, new androidx.activity.OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+                    getSupportFragmentManager().popBackStack();
+                } else if (bottomNav != null && bottomNav.getSelectedItemId() != R.id.nav_home) {
+                    bottomNav.setSelectedItemId(R.id.nav_home);
+                } else {
+                    setEnabled(false);
+                    getOnBackPressedDispatcher().onBackPressed();
+                }
+            }
+        });
     }
 
     @Override

@@ -38,7 +38,7 @@ public class VoicePipelineManager {
     public VoicePipelineManager() {
         this.asrManager = new ASRManager();
         this.translationManager = new TranslationManager();
-        this.ttsManager = new TTSManager();
+        this.ttsManager = TTSManager.getInstance();
     }
 
     public void initializeAsync(Context context, InitCallback callback) {
@@ -87,8 +87,17 @@ public class VoicePipelineManager {
 
     /**
      * Processes input audio through the complete offline AI pipeline.
+     * Defaults to Hindi -> Santali.
      */
     public void processAsync(File audioInputFile, File audioOutputFile, PipelineCallback callback) {
+        processAsync(audioInputFile, audioOutputFile, true, callback);
+    }
+
+    /**
+     * Processes input audio with explicit direction support.
+     * @param isHindiToSantali true for Hindi -> Santali, false for Santali -> Hindi.
+     */
+    public void processAsync(File audioInputFile, File audioOutputFile, boolean isHindiToSantali, PipelineCallback callback) {
         if (!isBusy.compareAndSet(false, true)) {
             Log.w(TAG, "Pipeline is already busy processing another request.");
             return;
@@ -104,12 +113,12 @@ public class VoicePipelineManager {
                 }
 
                 // 1. ASR Stage
-                postProgress(callback, "Understanding Hindi...");
+                postProgress(callback, isHindiToSantali ? "Understanding Hindi..." : "Recognizing speech...");
                 long tAsr0 = System.currentTimeMillis();
-                String hindiText = asrManager.transcribe(audioInputFile);
+                String recognizedText = asrManager.transcribe(audioInputFile);
                 long asrDuration = System.currentTimeMillis() - tAsr0;
 
-                if (hindiText == null || hindiText.trim().isEmpty()) {
+                if (recognizedText == null || recognizedText.trim().isEmpty()) {
                     postResult(callback, new PipelineResult(
                             "", "", audioOutputFile, asrDuration, 0, 0,
                             System.currentTimeMillis() - t0, false, "ASR produced no transcription text."
@@ -117,37 +126,57 @@ public class VoicePipelineManager {
                     return;
                 }
 
-                Log.i(TAG, "ASR Output [" + asrDuration + " ms]: " + hindiText);
+                Log.i(TAG, "ASR Output [" + asrDuration + " ms]: " + recognizedText);
 
                 // 2. Translation Stage
-                postProgress(callback, "Translating to Santali...");
+                postProgress(callback, isHindiToSantali ? "Translating to Santali..." : "Translating to Hindi...");
                 long tTrans0 = System.currentTimeMillis();
-                String santaliText = null;
-                String normalized = com.vernacular.learning.utils.TwoWayTranslationHelper.normalize(hindiText);
-                if (com.vernacular.learning.utils.TwoWayTranslationHelper.hasVerifiedTranslation(normalized)) {
-                    santaliText = com.vernacular.learning.utils.TwoWayTranslationHelper.getVerifiedTranslation(normalized);
+                String translatedText = null;
+                String normalized = com.vernacular.learning.utils.TwoWayTranslationHelper.normalize(recognizedText);
+
+                if (isHindiToSantali) {
+                    if (com.vernacular.learning.utils.TwoWayTranslationHelper.hasVerifiedTranslation(normalized)) {
+                        translatedText = com.vernacular.learning.utils.TwoWayTranslationHelper.getVerifiedTranslation(normalized);
+                    }
+                } else {
+                    if (com.vernacular.learning.utils.TwoWayTranslationHelper.hasVerifiedSantaliTranslation(normalized)) {
+                        translatedText = com.vernacular.learning.utils.TwoWayTranslationHelper.getVerifiedSantaliTranslation(normalized);
+                    }
                 }
-                if (santaliText == null || santaliText.isEmpty()) {
-                    santaliText = translationManager.translate(hindiText);
+
+                if (translatedText == null || translatedText.isEmpty()) {
+                    translatedText = translationManager.translate(recognizedText, isHindiToSantali);
                 }
-                if (santaliText == null || santaliText.isEmpty()) {
-                    santaliText = com.vernacular.learning.utils.TwoWayTranslationHelper.getVerifiedTranslation(normalized);
+
+                if (translatedText == null || translatedText.isEmpty()) {
+                    if (isHindiToSantali) {
+                        translatedText = com.vernacular.learning.utils.TwoWayTranslationHelper.getVerifiedTranslation(normalized);
+                    } else {
+                        translatedText = com.vernacular.learning.utils.TwoWayTranslationHelper.getVerifiedSantaliTranslation(normalized);
+                    }
                 }
-                if (santaliText == null) {
-                    santaliText = "";
+                if (translatedText == null) {
+                    translatedText = "";
                 }
                 long transDuration = System.currentTimeMillis() - tTrans0;
 
-                Log.i(TAG, "Translation Output [" + transDuration + " ms]: " + santaliText);
+                Log.i(TAG, "Translation Output [" + transDuration + " ms]: " + translatedText);
 
                 // 3. TTS Stage
-                postProgress(callback, "Generating Santali speech...");
+                postProgress(callback, isHindiToSantali ? "Generating Santali speech..." : "Generating Hindi speech...");
                 long tTts0 = System.currentTimeMillis();
                 File outputAudio = null;
-                if (ttsManager.isAvailable()) {
-                    outputAudio = ttsManager.synthesize(santaliText, audioOutputFile);
+                if (isHindiToSantali) {
+                    if (ttsManager.isAvailable()) {
+                        outputAudio = ttsManager.synthesize(translatedText, audioOutputFile);
+                    } else {
+                        Log.i(TAG, "Santali TTS stage skipped (" + ttsManager.getStatusMessage() + ")");
+                    }
                 } else {
-                    Log.i(TAG, "TTS stage skipped (" + ttsManager.getStatusMessage() + ")");
+                    if (ttsManager.isHindiAvailable()) {
+                        boolean ok = ttsManager.synthesizeHindi(translatedText, audioOutputFile);
+                        if (ok) outputAudio = audioOutputFile;
+                    }
                 }
                 long ttsDuration = System.currentTimeMillis() - tTts0;
 
@@ -157,8 +186,8 @@ public class VoicePipelineManager {
                         totalDuration, asrDuration, transDuration, ttsDuration));
 
                 PipelineResult result = PipelineResult.success(
-                        hindiText,
-                        santaliText,
+                        recognizedText,
+                        translatedText,
                         outputAudio,
                         asrDuration,
                         transDuration,

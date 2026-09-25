@@ -7,13 +7,13 @@
     android:layout_height="match_parent"
     android:background="?attr/customBackgroundColor">
 
-    <!-- Top Bar -->
-    <LinearLayout
+    <!-- Top Action Bar -->
+    <RelativeLayout
         android:id="@+id/flashcardTopBar"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
+        android:background="?attr/customCardColor"
+        android:elevation="2dp"
         android:paddingHorizontal="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -21,23 +21,75 @@
 
         <ImageView
             android:id="@+id/btnFlashcardBack"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
             android:contentDescription="Back"
-            android:padding="4dp"
-            android:src="@drawable/ic_arrow_back"
-            app:tint="?attr/customPrimaryColor" />
+            android:focusable="true"
+            android:padding="6dp"
+            android:src="@drawable/ic_back"
+            app:tint="?attr/customTextColor" />
 
         <TextView
-            android:layout_width="0dp"
+            android:id="@+id/tvDeckTitle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
             android:layout_marginStart="12dp"
-            android:layout_weight="1"
-            android:text="@string/flashcards_title"
+            android:layout_toEndOf="@id/btnFlashcardBack"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="फ्लैशकार्ड"
             android:textColor="?attr/customTextColor"
             android:textSize="18sp"
             android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCreateFlashcardDeck"
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:backgroundTint="?attr/customPrimaryColor"
+            android:text="+ नया डेक"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            app:cornerRadius="19dp" />
+    </RelativeLayout>
+
+    <!-- Deck Selector Spinner Row -->
+    <LinearLayout
+        android:id="@+id/layoutDeckSelector"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/bg_tab_unselected"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/flashcardTopBar">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="डेक:"
+            android:textColor="?attr/customPrimaryColor"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+        <Spinner
+            android:id="@+id/spnSelectDeck"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="8dp" />
     </LinearLayout>
 
     <!-- Main Flashcard (Centered Large Card) -->
@@ -45,160 +97,196 @@
         android:id="@+id/cardFlashcardMain"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginHorizontal="28dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="24dp"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="18dp"
         android:clickable="true"
         android:focusable="true"
         app:cardBackgroundColor="?attr/customCardColor"
-        app:cardCornerRadius="20dp"
+        app:cardCornerRadius="24dp"
         app:cardElevation="3dp"
         app:layout_constraintBottom_toTopOf="@+id/flashcardControls"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/flashcardTopBar"
+        app:layout_constraintTop_toBottomOf="@+id/layoutDeckSelector"
         app:strokeColor="?attr/customBorderColor"
-        app:strokeWidth="1dp">
+        app:strokeWidth="1.5dp">
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:gravity="center"
-            android:orientation="vertical"
             android:padding="24dp">
 
-            <!-- Big Apple Visual -->
-            <ImageView
-                android:id="@+id/ivFlashcardVisual"
-                android:layout_width="160dp"
-                android:layout_height="160dp"
-                android:contentDescription="Flashcard illustration"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_apple_single" />
-
-            <!-- Hindi Word: सेब -->
+            <!-- Card Header Badge (FRONT or BACK indicator) -->
             <TextView
-                android:id="@+id/tvFlashcardHindi"
+                android:id="@+id/tvCardSideBadge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:text="@string/flashcard_hindi_word"
-                android:textColor="?attr/customTextColor"
-                android:textSize="26sp"
-                android:textStyle="bold" />
-
-            <!-- Transliteration: (Seb) -->
-            <TextView
-                android:id="@+id/tvFlashcardTransliteration"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="@string/flashcard_transliteration"
-                android:textColor="?attr/customTextSecondaryColor"
-                android:textSize="14sp" />
-
-            <!-- English Equivalent: Apple -->
-            <TextView
-                android:id="@+id/tvFlashcardEnglish"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="@string/flashcard_english_word"
-                android:textColor="?attr/customTextSecondaryColor"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-            <!-- Mother Tongue Translation (revealed on tap): ᱟᱯᱮᱞ (Apel) -->
-            <TextView
-                android:id="@+id/tvFlashcardMotherTongue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_pill_secondary"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="6dp"
-                android:text="@string/flashcard_santhali_word"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:background="@drawable/bg_tab_unselected"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="4dp"
+                android:text="आगे (प्रश्न)"
                 android:textColor="?attr/customPrimaryColor"
-                android:textSize="15sp"
+                android:textSize="11sp"
                 android:textStyle="bold" />
 
             <!-- Speaker Audio Button -->
             <ImageView
                 android:id="@+id/btnFlashcardAudio"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginTop="14dp"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentTop="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Play pronunciation"
-                android:padding="8dp"
+                android:contentDescription="Play audio"
+                android:padding="6dp"
                 android:src="@drawable/ic_speaker"
                 app:tint="?attr/customPrimaryColor" />
 
-            <!-- Tap Hint -->
+            <!-- Center Content (Front or Back) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvFlashcardEmoji"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🌱"
+                    android:textSize="54sp" />
+
+                <!-- Concept Label -->
+                <TextView
+                    android:id="@+id/tvFlashcardConcept"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:letterSpacing="0.05"
+                    android:text="मूल अवधारणा"
+                    android:textColor="?attr/customPrimaryColor"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <!-- Main Card Text (Question or Answer) -->
+                <TextView
+                    android:id="@+id/tvFlashcardMainText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:gravity="center"
+                    android:lineSpacingExtra="4dp"
+                    android:text="पौधों को बढ़ने के लिए क्या चाहिए?"
+                    android:textColor="?attr/customTextColor"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <!-- Extra Subtext / Vernacular / Transliteration -->
+                <TextView
+                    android:id="@+id/tvFlashcardSubText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:gravity="center"
+                    android:text="उत्तर देखने के लिए कार्ड पर टैप करें"
+                    android:textColor="?attr/customTextSecondaryColor"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <!-- Bottom Tap Hint -->
             <TextView
                 android:id="@+id/tvTapHint"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/tap_to_reveal"
-                android:textColor="?attr/customTextSecondaryColor"
-                android:textSize="11sp" />
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:text="पलटने के लिए टैप करें 🔄"
+                android:textColor="?attr/customPrimaryColor"
+                android:textSize="12sp"
+                android:textStyle="bold" />
 
-        </LinearLayout>
+        </RelativeLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Bottom Navigation Controls: <  1/10  > -->
+    <!-- Bottom Navigation Controls -->
     <LinearLayout
         android:id="@+id/flashcardControls"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:layout_marginBottom="36dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
         android:gravity="center"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <!-- Previous Arrow Circle Button -->
-        <ImageView
-            android:id="@+id/btnPrevCard"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="@drawable/bg_pill_secondary"
-            android:clickable="true"
-            android:contentDescription="Previous Card"
-            android:focusable="true"
-            android:padding="8dp"
-            android:src="@drawable/ic_arrow_left"
-            app:tint="?attr/customPrimaryColor" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-        <!-- Counter 1/10 -->
+            <!-- Previous Arrow Button -->
+            <ImageView
+                android:id="@+id/btnPrevCard"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_tab_unselected"
+                android:clickable="true"
+                android:contentDescription="Previous Card"
+                android:focusable="true"
+                android:padding="10dp"
+                android:src="@drawable/ic_back"
+                app:tint="?attr/customPrimaryColor" />
+
+            <!-- Counter (Card X of Y) -->
+            <TextView
+                android:id="@+id/tvCardCounter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:text="कार्ड 1 / 10"
+                android:textColor="?attr/customTextColor"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <!-- Next Arrow Button -->
+            <ImageView
+                android:id="@+id/btnNextCard"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_tab_unselected"
+                android:clickable="true"
+                android:contentDescription="Next Card"
+                android:focusable="true"
+                android:padding="10dp"
+                android:rotation="180"
+                android:src="@drawable/ic_back"
+                app:tint="?attr/customPrimaryColor" />
+        </LinearLayout>
+
+        <!-- Restart Deck Button -->
         <TextView
-            android:id="@+id/tvCardCounter"
+            android:id="@+id/btnRestartDeck"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="24dp"
-            android:text="@string/flashcard_counter_sample"
-            android:textColor="?attr/customTextColor"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-
-        <!-- Next Arrow Circle Button -->
-        <ImageView
-            android:id="@+id/btnNextCard"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="@drawable/bg_pill_secondary"
+            android:layout_marginTop="12dp"
+            android:background="?attr/selectableItemBackground"
             android:clickable="true"
-            android:contentDescription="Next Card"
             android:focusable="true"
-            android:padding="8dp"
-            android:src="@drawable/ic_arrow_right"
-            app:tint="?attr/customPrimaryColor" />
-
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="6dp"
+            android:text="🔄 पुनः आरंभ करें"
+            android:textColor="?attr/customPrimaryColor"
+            android:textSize="13sp"
+            android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Empty State View when no flashcards exist -->
+    <!-- Empty State View -->
     <LinearLayout
         android:id="@+id/layoutEmptyFlashcards"
         android:layout_width="wrap_content"
@@ -215,28 +303,17 @@
         <ImageView
             android:layout_width="64dp"
             android:layout_height="64dp"
-            android:contentDescription="No flashcards"
-            android:src="@drawable/ic_language"
+            android:src="@drawable/ic_apple_single"
             app:tint="?attr/customTextSecondaryColor" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:gravity="center"
-            android:text="@string/empty_flashcards_title"
+            android:text="इस डेक में कोई फ्लैशकार्ड नहीं है"
             android:textColor="?attr/customTextColor"
             android:textSize="18sp"
             android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:gravity="center"
-            android:text="@string/empty_flashcards_desc"
-            android:textColor="?attr/customTextSecondaryColor"
-            android:textSize="13sp" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

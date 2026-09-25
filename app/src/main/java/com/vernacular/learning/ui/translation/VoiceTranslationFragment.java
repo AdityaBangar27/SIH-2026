@@ -10,10 +10,12 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,6 +26,7 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.vernacular.learning.R;
 import com.vernacular.learning.ai.PipelineResult;
@@ -32,6 +35,9 @@ import com.vernacular.learning.utils.AudioPlayer;
 import com.vernacular.learning.utils.AudioRecorder;
 import com.vernacular.learning.utils.ThemeHelper;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * Voice Translation Fragment implementing the offline teaching workflow:
@@ -48,8 +54,19 @@ import java.io.File;
 public class VoiceTranslationFragment extends Fragment {
     private static final String TAG = "VoiceTranslationFrag";
 
+    private boolean isHindiToSantali = true;
     private boolean isRecording = false;
     private File currentOutputAudioFile = null;
+
+    // Translation Direction Banner Views
+    private MaterialCardView btnSwapDirection;
+    private TextView tvDirectionInputText;
+    private TextView tvDirectionOutputText;
+    private TextView tvTeacherPanelTitle;
+    private TextView tvTeacherInputLabel;
+    private TextView tvFlowDividerText;
+    private TextView tvStudentPanelTitle;
+    private TextView tvStudentOutputLabel;
 
     // Teacher Panel Views
     private MaterialCardView btnTeacherControl;
@@ -57,7 +74,8 @@ public class VoiceTranslationFragment extends Fragment {
     private View viewTeacherRipple;
     private TextView tvTeacherStatus;
     private TextView badgeTeacherState;
-    private TextView tvTeacherRecognized;
+    private EditText tvTeacherRecognized;
+    private MaterialButton btnTranslate;
 
     // Student Panel Views
     private TextView badgeStudentState;
@@ -69,6 +87,17 @@ public class VoiceTranslationFragment extends Fragment {
 
     // Engine Status
     private TextView tvEngineStatus;
+
+    // Translation Performance Card Views
+    private MaterialCardView cardPerformance;
+    private TextView tvPerformanceTime;
+    private TextView tvPerformanceDesc;
+    private TextView tvPerformanceBreakdown;
+    private TextView tvPerformanceHistory;
+
+    // Monotonic performance timing tracking
+    private long translationStartTime = 0;
+    private final List<String> recentPerformanceHistory = new ArrayList<>();
 
     private ObjectAnimator pulseAnimator;
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -98,7 +127,25 @@ public class VoiceTranslationFragment extends Fragment {
         View root = inflater.inflate(R.layout.fragment_voice_translation, container, false);
 
         ImageView btnBack = root.findViewById(R.id.btnVtBack);
-        btnBack.setOnClickListener(v -> requireActivity().onBackPressed());
+        btnBack.setOnClickListener(v -> {
+            if (isAdded()) {
+                if (getParentFragmentManager().getBackStackEntryCount() > 0) {
+                    getParentFragmentManager().popBackStack();
+                } else {
+                    requireActivity().getOnBackPressedDispatcher().onBackPressed();
+                }
+            }
+        });
+
+        // Direction Banner bindings
+        btnSwapDirection = root.findViewById(R.id.btnSwapDirection);
+        tvDirectionInputText = root.findViewById(R.id.tvDirectionInputText);
+        tvDirectionOutputText = root.findViewById(R.id.tvDirectionOutputText);
+        tvTeacherPanelTitle = root.findViewById(R.id.tvTeacherPanelTitle);
+        tvTeacherInputLabel = root.findViewById(R.id.tvTeacherInputLabel);
+        tvFlowDividerText = root.findViewById(R.id.tvFlowDividerText);
+        tvStudentPanelTitle = root.findViewById(R.id.tvStudentPanelTitle);
+        tvStudentOutputLabel = root.findViewById(R.id.tvStudentOutputLabel);
 
         // Teacher Panel bindings
         btnTeacherControl = root.findViewById(R.id.btnTeacherControl);
@@ -107,6 +154,7 @@ public class VoiceTranslationFragment extends Fragment {
         tvTeacherStatus = root.findViewById(R.id.tvTeacherStatus);
         badgeTeacherState = root.findViewById(R.id.badgeTeacherState);
         tvTeacherRecognized = root.findViewById(R.id.tvTeacherRecognized);
+        btnTranslate = root.findViewById(R.id.btnTranslate);
 
         // Student Panel bindings
         badgeStudentState = root.findViewById(R.id.badgeStudentState);
@@ -118,6 +166,13 @@ public class VoiceTranslationFragment extends Fragment {
 
         // Engine Status
         tvEngineStatus = root.findViewById(R.id.tvEngineStatus);
+
+        // Translation Performance Card bindings
+        cardPerformance = root.findViewById(R.id.cardPerformance);
+        tvPerformanceTime = root.findViewById(R.id.tvPerformanceTime);
+        tvPerformanceDesc = root.findViewById(R.id.tvPerformanceDesc);
+        tvPerformanceBreakdown = root.findViewById(R.id.tvPerformanceBreakdown);
+        tvPerformanceHistory = root.findViewById(R.id.tvPerformanceHistory);
 
         // Ensure Ol Chiki local font is applied for Santali rendering
         try {
@@ -135,7 +190,9 @@ public class VoiceTranslationFragment extends Fragment {
         voicePipelineManager = new VoicePipelineManager();
 
         setupControls();
+        updateDirectionUI();
         resetToIdle();
+        resetPerformanceCard();
 
         tvEngineStatus.setText("Initializing local offline AI pipeline (Whisper & IndicTrans2)...");
         voicePipelineManager.initializeAsync(requireContext(), success -> {
@@ -156,10 +213,37 @@ public class VoiceTranslationFragment extends Fragment {
     }
 
     private void setupControls() {
-        // Teacher Microphone Control
+        // Swap Direction Button
+        if (btnSwapDirection != null) {
+            btnSwapDirection.setOnClickListener(v -> {
+                if (voicePipelineManager != null && voicePipelineManager.isBusy()) {
+                    Toast.makeText(requireContext(), "AI pipeline is busy processing...", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                isHindiToSantali = !isHindiToSantali;
+                updateDirectionUI();
+                resetToIdle();
+                resetPerformanceCard();
+                currentOutputAudioFile = null;
+                setPlayButtonEnabled(false);
+                if (tvTeacherRecognized != null) tvTeacherRecognized.setText("");
+                if (tvStudentTranslated != null) tvStudentTranslated.setText("");
+            });
+        }
+
+        // Teacher / Input Microphone Control
         btnTeacherControl.setOnClickListener(v -> {
             if (voicePipelineManager != null && voicePipelineManager.isBusy()) {
                 Toast.makeText(requireContext(), "AI pipeline is busy processing...", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (!isHindiToSantali) {
+                // Santali ASR limitation feedback: Offline Whisper-tiny does not have Santali acoustic model
+                Toast.makeText(requireContext(), "Offline Santali voice recognition is unavailable on this device. Please enter or paste Santali text to translate into Hindi.", Toast.LENGTH_LONG).show();
+                if (tvTeacherRecognized != null) {
+                    tvTeacherRecognized.requestFocus();
+                }
                 return;
             }
 
@@ -177,15 +261,39 @@ public class VoiceTranslationFragment extends Fragment {
             }
         });
 
-        // Santali Audio Playback button
+        // Translate Button
+        btnTranslate.setOnClickListener(v -> {
+            if (voicePipelineManager != null && voicePipelineManager.isBusy()) {
+                Toast.makeText(requireContext(), "AI pipeline is busy processing...", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (isRecording) {
+                // If currently recording speech, translate action finishes recording and processes
+                stopRecordingAndProcess();
+            } else {
+                String inputText = tvTeacherRecognized != null && tvTeacherRecognized.getText() != null
+                        ? tvTeacherRecognized.getText().toString().trim() : "";
+                if (!inputText.isEmpty()) {
+                    processTextTranslation(inputText);
+                } else {
+                    Toast.makeText(requireContext(), isHindiToSantali
+                            ? "Please speak or enter Hindi text to translate"
+                            : "Please enter Santali text to translate", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        // Audio Playback button (Santali or Hindi depending on direction)
         btnPlaySantali.setOnClickListener(v -> {
             if (currentOutputAudioFile != null && currentOutputAudioFile.exists() && currentOutputAudioFile.length() > 44) {
+                final String targetLang = isHindiToSantali ? "Santali" : "Hindi";
                 audioPlayer.play(currentOutputAudioFile, new AudioPlayer.PlaybackCallback() {
                     @Override
                     public void onPlaybackStarted() {
                         if (isAdded()) {
-                            tvPlaySantaliLabel.setText("Playing Santali audio...");
-                            tvStudentStatus.setText("Playing Santali audio...");
+                            tvPlaySantaliLabel.setText("Playing " + targetLang + " audio...");
+                            tvStudentStatus.setText("Playing " + targetLang + " audio...");
                             badgeStudentState.setText("Playing");
                         }
                     }
@@ -193,7 +301,7 @@ public class VoiceTranslationFragment extends Fragment {
                     @Override
                     public void onPlaybackCompleted() {
                         if (isAdded()) {
-                            tvPlaySantaliLabel.setText(R.string.speech_ready);
+                            tvPlaySantaliLabel.setText(isHindiToSantali ? "Play Santali" : "Play Hindi");
                             tvStudentStatus.setText(R.string.speech_ready);
                             badgeStudentState.setText("Ready");
                         }
@@ -202,23 +310,31 @@ public class VoiceTranslationFragment extends Fragment {
                     @Override
                     public void onError(String message) {
                         if (isAdded()) {
-                            tvPlaySantaliLabel.setText(R.string.speech_ready);
+                            tvPlaySantaliLabel.setText(isHindiToSantali ? "Play Santali" : "Play Hindi");
                             tvStudentStatus.setText("Playback error.");
                             badgeStudentState.setText("Ready");
                         }
                     }
                 });
             } else {
-                Toast.makeText(requireContext(), "Santali TTS audio unavailable.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), (isHindiToSantali ? "Santali" : "Hindi") + " TTS audio unavailable.", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     /**
-     * Starts recording Hindi speech from the microphone.
+     * Starts recording speech from the microphone.
      */
     private void startRecording() {
         if (!isAdded()) return;
+
+        if (!isHindiToSantali) {
+            Toast.makeText(requireContext(), "Offline Santali voice recognition is unavailable on this device. Please enter or paste Santali text to translate into Hindi.", Toast.LENGTH_LONG).show();
+            if (tvTeacherRecognized != null) {
+                tvTeacherRecognized.requestFocus();
+            }
+            return;
+        }
 
         cancelAnimations();
         isRecording = true;
@@ -270,11 +386,15 @@ public class VoiceTranslationFragment extends Fragment {
         isRecording = false;
         cancelAnimations();
 
+        // Start monotonic timing measurement immediately when Translate is triggered
+        onTranslationStarted();
+
         audioRecorder.stopRecording();
 
         Context context = getContext();
         if (context == null) {
             resetToIdle();
+            onTranslationFailed("Context unavailable");
             return;
         }
 
@@ -289,23 +409,31 @@ public class VoiceTranslationFragment extends Fragment {
             }
         }
 
-        tvTeacherStatus.setText(R.string.understanding_hindi);
+        String speechRecogMsg = isHindiToSantali ? getString(R.string.understanding_hindi) : "Recognizing speech...";
+        tvTeacherStatus.setText(speechRecogMsg);
         badgeTeacherState.setText("ASR");
-        tvEngineStatus.setText(R.string.understanding_hindi);
+        tvEngineStatus.setText(speechRecogMsg);
 
         File outputTtsFile = new File(cacheDir, "tts_output_" + System.currentTimeMillis() + ".wav");
 
         if (latestWav != null && latestWav.exists() && latestWav.length() > 44) {
             // Process captured audio through local offline Whisper ASR and IndicTrans2
-            voicePipelineManager.processAsync(latestWav, outputTtsFile, new VoicePipelineManager.PipelineCallback() {
+            voicePipelineManager.processAsync(latestWav, outputTtsFile, isHindiToSantali, new VoicePipelineManager.PipelineCallback() {
                 @Override
                 public void onProgress(String stageMessage) {
                     if (!isAdded()) return;
                     tvEngineStatus.setText(stageMessage);
                     if (stageMessage.contains("Translating")) {
-                        tvTeacherStatus.setText(R.string.translating_to_santhali);
+                        String transMsg = isHindiToSantali ? getString(R.string.translating_to_santhali) : "Translating to Hindi...";
+                        tvTeacherStatus.setText(transMsg);
                         badgeTeacherState.setText("Translating");
                         badgeStudentState.setText("Translating");
+                    } else if (stageMessage.contains("Generating")) {
+                        String msg = isHindiToSantali ? getString(R.string.generating_santali_speech) : "Generating Hindi speech...";
+                        tvTeacherStatus.setText(msg);
+                        tvStudentStatus.setText(msg);
+                        badgeTeacherState.setText("Generating");
+                        badgeStudentState.setText("Generating");
                     }
                 }
 
@@ -314,10 +442,10 @@ public class VoiceTranslationFragment extends Fragment {
                     if (!isAdded()) return;
 
                     if (result.isSuccess && result.recognizedHindiText != null && !result.recognizedHindiText.trim().isEmpty()) {
-                        // 1. Display recognized Hindi Unicode
+                        // 1. Display recognized source text
                         tvTeacherRecognized.setText(result.recognizedHindiText);
 
-                        // 2. Display translated Santali Ol Chiki Unicode
+                        // 2. Display translated target text
                         tvStudentTranslated.setText(result.translatedSantaliText);
 
                         tvTeacherStatus.setText(R.string.status_ready);
@@ -327,18 +455,21 @@ public class VoiceTranslationFragment extends Fragment {
                         if (result.outputAudioFile != null && result.outputAudioFile.exists() && result.outputAudioFile.length() > 44) {
                             currentOutputAudioFile = result.outputAudioFile;
                             tvStudentStatus.setText(R.string.speech_ready);
-                            tvPlaySantaliLabel.setText(R.string.speech_ready);
+                            tvPlaySantaliLabel.setText(isHindiToSantali ? "Play Santali" : "Play Hindi");
                             badgeStudentState.setText("Ready");
                             setPlayButtonEnabled(true);
-                            tvEngineStatus.setText("Speech ready. Tap Play to listen.");
+                            tvEngineStatus.setText(R.string.speech_ready);
                         } else {
                             currentOutputAudioFile = null;
                             tvStudentStatus.setText("Text translation ready (TTS unavailable)");
-                            tvPlaySantaliLabel.setText("Play Santali Speech");
+                            tvPlaySantaliLabel.setText(isHindiToSantali ? "Play Santali" : "Play Hindi");
                             badgeStudentState.setText("Ready");
                             setPlayButtonEnabled(false);
                             tvEngineStatus.setText("Text translation ready (TTS unavailable)");
                         }
+
+                        // Complete performance measurement and update card
+                        onTranslationCompleted(result);
                     } else {
                         // Error handling: do not fabricate translations or return raw errors
                         tvTeacherStatus.setText(R.string.asr_failed);
@@ -346,13 +477,292 @@ public class VoiceTranslationFragment extends Fragment {
                         tvStudentStatus.setText(R.string.translation_failed);
                         badgeStudentState.setText("Failed");
                         tvEngineStatus.setText(result.errorMessage != null ? result.errorMessage : "Could not understand the recording.");
+                        onTranslationFailed(result.errorMessage);
                         resetToIdleDelayed(3000);
                     }
                 }
             });
         } else {
             tvTeacherStatus.setText(R.string.no_speech_detected);
+            onTranslationFailed("No speech detected");
             resetToIdleDelayed(2500);
+        }
+    }
+
+    /**
+     * Resets the Translation Performance Card to the standby state before translation.
+     */
+    private void resetPerformanceCard() {
+        if (!isAdded() || tvPerformanceTime == null) return;
+        tvPerformanceTime.setText("--.-- s");
+        tvPerformanceDesc.setText("Time will appear after translation");
+        if (tvPerformanceBreakdown != null) {
+            tvPerformanceBreakdown.setVisibility(View.GONE);
+        }
+        updateRecentHistoryView();
+    }
+
+    /**
+     * Triggered immediately when Translate is initiated (Translate button or voice stop).
+     * Records the monotonic start timestamp using SystemClock.elapsedRealtime()
+     * and shows the processing indicator.
+     */
+    private void onTranslationStarted() {
+        if (!isAdded() || tvPerformanceTime == null) return;
+        translationStartTime = SystemClock.elapsedRealtime();
+        tvPerformanceTime.setText("Processing...");
+        tvPerformanceDesc.setText("Measuring translation time");
+        if (tvPerformanceBreakdown != null) {
+            tvPerformanceBreakdown.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * Triggered when translation finishes successfully.
+     * Computes the actual elapsed duration using SystemClock.elapsedRealtime()
+     * and displays the measured seconds formatted to 2 decimal places.
+     */
+    private void onTranslationCompleted(PipelineResult result) {
+        if (!isAdded() || tvPerformanceTime == null) return;
+        long elapsedRealtimeMs = SystemClock.elapsedRealtime() - translationStartTime;
+        if (elapsedRealtimeMs < 0) elapsedRealtimeMs = 0;
+
+        double seconds = elapsedRealtimeMs / 1000.0;
+        String timeStr = String.format(Locale.US, "%.2f s", seconds);
+
+        tvPerformanceTime.setText(timeStr);
+        tvPerformanceDesc.setText("Time taken for this translation");
+
+        // Display individual stage breakdown if provided by pipeline
+        if (result != null && (result.asrLatencyMs > 0 || result.translationLatencyMs > 0)) {
+            StringBuilder sb = new StringBuilder();
+            if (result.asrLatencyMs > 0) {
+                sb.append(String.format(Locale.US, "ASR: %.2f s", result.asrLatencyMs / 1000.0));
+            }
+            if (result.translationLatencyMs > 0) {
+                if (sb.length() > 0) sb.append("  •  ");
+                sb.append(String.format(Locale.US, "Translation: %.2f s", result.translationLatencyMs / 1000.0));
+            }
+            if (result.totalLatencyMs > 0) {
+                if (sb.length() > 0) sb.append("  •  ");
+                sb.append(String.format(Locale.US, "Pipeline: %.2f s", result.totalLatencyMs / 1000.0));
+            }
+            if (tvPerformanceBreakdown != null) {
+                tvPerformanceBreakdown.setText(sb.toString());
+                tvPerformanceBreakdown.setVisibility(View.VISIBLE);
+            }
+        } else if (tvPerformanceBreakdown != null) {
+            tvPerformanceBreakdown.setVisibility(View.GONE);
+        }
+
+        // Store in recent performance history (last 3 entries)
+        recentPerformanceHistory.add(0, timeStr);
+        while (recentPerformanceHistory.size() > 3) {
+            recentPerformanceHistory.remove(recentPerformanceHistory.size() - 1);
+        }
+        updateRecentHistoryView();
+    }
+
+    /**
+     * Triggered when translation fails, showing clear failure feedback.
+     */
+    private void onTranslationFailed(String errorMessage) {
+        if (!isAdded() || tvPerformanceTime == null) return;
+        long elapsedRealtimeMs = translationStartTime > 0 ? (SystemClock.elapsedRealtime() - translationStartTime) : 0;
+        tvPerformanceTime.setText("Translation failed");
+        if (elapsedRealtimeMs > 0) {
+            double seconds = elapsedRealtimeMs / 1000.0;
+            tvPerformanceDesc.setText(String.format(Locale.US, "Failed after %.2f s", seconds));
+        } else {
+            tvPerformanceDesc.setText("No completed translation time available");
+        }
+        if (tvPerformanceBreakdown != null) {
+            tvPerformanceBreakdown.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * Updates the compact recent performance history section (last 3 translation times).
+     */
+    private void updateRecentHistoryView() {
+        if (!isAdded() || tvPerformanceHistory == null) return;
+        if (recentPerformanceHistory.isEmpty()) {
+            tvPerformanceHistory.setVisibility(View.GONE);
+        } else {
+            StringBuilder sb = new StringBuilder("Recent Performance: ");
+            for (int i = 0; i < recentPerformanceHistory.size(); i++) {
+                if (i > 0) sb.append("  •  ");
+                sb.append(recentPerformanceHistory.get(i));
+            }
+            tvPerformanceHistory.setText(sb.toString());
+            tvPerformanceHistory.setVisibility(View.VISIBLE);
+        }
+    }
+
+    /**
+     * Translates typed or recognized text directly on background thread,
+     * maintaining the exact pipeline behavior and measured runtime timing.
+     */
+    /**
+     * Translates typed or recognized text directly on background thread,
+     * maintaining the exact pipeline behavior and measured runtime timing.
+     * Supports both Hindi -> Santali and Santali -> Hindi directions.
+     */
+    private void processTextTranslation(String inputText) {
+        if (voicePipelineManager == null || !voicePipelineManager.isInitialized()) {
+            Toast.makeText(requireContext(), "AI Pipeline is initializing...", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        onTranslationStarted();
+
+        tvTeacherStatus.setText(isHindiToSantali ? getString(R.string.translating_to_santhali) : "Translating to Hindi...");
+        badgeTeacherState.setText("Translating");
+        badgeStudentState.setText("Translating");
+        tvStudentStatus.setText(R.string.placeholder_awaiting_translation);
+        tvEngineStatus.setText(isHindiToSantali ? "Translating to Santali..." : "Translating to Hindi...");
+        setPlayButtonEnabled(false);
+
+        File cacheDir = requireContext().getCacheDir();
+        File outputTtsFile = new File(cacheDir, "tts_output_" + System.currentTimeMillis() + ".wav");
+
+        new Thread(() -> {
+            long t0 = System.currentTimeMillis();
+            try {
+                // Translation Stage
+                long tTrans0 = System.currentTimeMillis();
+                String translatedText = null;
+                String normalized = com.vernacular.learning.utils.TwoWayTranslationHelper.normalize(inputText);
+
+                if (isHindiToSantali) {
+                    if (com.vernacular.learning.utils.TwoWayTranslationHelper.hasVerifiedTranslation(normalized)) {
+                        translatedText = com.vernacular.learning.utils.TwoWayTranslationHelper.getVerifiedTranslation(normalized);
+                    }
+                } else {
+                    if (com.vernacular.learning.utils.TwoWayTranslationHelper.hasVerifiedSantaliTranslation(normalized)) {
+                        translatedText = com.vernacular.learning.utils.TwoWayTranslationHelper.getVerifiedSantaliTranslation(normalized);
+                    }
+                }
+
+                if (translatedText == null || translatedText.isEmpty()) {
+                    translatedText = voicePipelineManager.getTranslationManager().translate(inputText, isHindiToSantali);
+                }
+
+                if (translatedText == null || translatedText.isEmpty()) {
+                    if (isHindiToSantali) {
+                        translatedText = com.vernacular.learning.utils.TwoWayTranslationHelper.getVerifiedTranslation(normalized);
+                    } else {
+                        translatedText = com.vernacular.learning.utils.TwoWayTranslationHelper.getVerifiedSantaliTranslation(normalized);
+                    }
+                }
+                if (translatedText == null) {
+                    translatedText = "";
+                }
+                long transDuration = System.currentTimeMillis() - tTrans0;
+
+                // TTS Stage
+                long tTts0 = System.currentTimeMillis();
+                File outputAudio = null;
+                if (isHindiToSantali) {
+                    if (voicePipelineManager.getTtsManager().isAvailable()) {
+                        outputAudio = voicePipelineManager.getTtsManager().synthesize(translatedText, outputTtsFile);
+                    }
+                } else {
+                    if (voicePipelineManager.getTtsManager().isHindiAvailable()) {
+                        boolean ok = voicePipelineManager.getTtsManager().synthesizeHindi(translatedText, outputTtsFile);
+                        if (ok) outputAudio = outputTtsFile;
+                    }
+                }
+                long ttsDuration = System.currentTimeMillis() - tTts0;
+                long totalDuration = System.currentTimeMillis() - t0;
+
+                PipelineResult result = PipelineResult.success(
+                        inputText,
+                        translatedText,
+                        outputAudio,
+                        0,
+                        transDuration,
+                        ttsDuration,
+                        totalDuration
+                );
+
+                final String finalTranslated = translatedText;
+                final File finalAudio = outputAudio;
+
+                handler.post(() -> {
+                    if (!isAdded()) return;
+
+                    tvStudentTranslated.setText(finalTranslated);
+                    tvTeacherStatus.setText(R.string.status_ready);
+                    badgeTeacherState.setText("Done");
+
+                    String playLabel = isHindiToSantali ? "Play Santali" : "Play Hindi";
+
+                    if (finalAudio != null && finalAudio.exists() && finalAudio.length() > 44) {
+                        currentOutputAudioFile = finalAudio;
+                        tvStudentStatus.setText(R.string.speech_ready);
+                        tvPlaySantaliLabel.setText(playLabel);
+                        badgeStudentState.setText("Ready");
+                        setPlayButtonEnabled(true);
+                        tvEngineStatus.setText(R.string.speech_ready);
+                    } else {
+                        currentOutputAudioFile = null;
+                        tvStudentStatus.setText("Text translation ready (TTS unavailable)");
+                        tvPlaySantaliLabel.setText(playLabel);
+                        badgeStudentState.setText("Ready");
+                        setPlayButtonEnabled(false);
+                        tvEngineStatus.setText("Text translation ready (TTS unavailable)");
+                    }
+
+                    onTranslationCompleted(result);
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "Error during text translation", e);
+                handler.post(() -> {
+                    if (!isAdded()) return;
+                    tvTeacherStatus.setText(R.string.status_ready);
+                    badgeTeacherState.setText("Failed");
+                    tvStudentStatus.setText(R.string.translation_failed);
+                    badgeStudentState.setText("Failed");
+                    tvEngineStatus.setText("Translation failed: " + e.getMessage());
+                    onTranslationFailed(e.getMessage());
+                });
+            }
+        }).start();
+    }
+
+    /**
+     * Updates all UI labels and placeholders according to the selected translation direction.
+     */
+    private void updateDirectionUI() {
+        if (!isAdded()) return;
+
+        if (isHindiToSantali) {
+            if (tvDirectionInputText != null) tvDirectionInputText.setText("Teacher • Hindi (हिंदी)");
+            if (tvDirectionOutputText != null) tvDirectionOutputText.setText("Student • Santali (संथाली)");
+            if (tvTeacherPanelTitle != null) tvTeacherPanelTitle.setText("Teacher (शिक्षक) • Hindi");
+            if (tvTeacherStatus != null) tvTeacherStatus.setText(R.string.tap_to_speak_hindi);
+            if (tvTeacherInputLabel != null) tvTeacherInputLabel.setText("Recognized Hindi (पहचानी गई हिंदी)");
+            if (tvTeacherRecognized != null) tvTeacherRecognized.setHint("Awaiting Hindi speech or text...");
+            if (btnTranslate != null) btnTranslate.setText("अनुवाद करें (Translate to Santali)");
+            if (tvFlowDividerText != null) tvFlowDividerText.setText("Hindi → Santali (हिंदी → संथाली)");
+            if (tvStudentPanelTitle != null) tvStudentPanelTitle.setText("Student (छात्र) • Santali");
+            if (tvStudentOutputLabel != null) tvStudentOutputLabel.setText("Santali Translation (संथाली अनुवाद)");
+            if (tvStudentTranslated != null) tvStudentTranslated.setHint(R.string.placeholder_awaiting_translation);
+            if (tvPlaySantaliLabel != null) tvPlaySantaliLabel.setText("Play Santali");
+        } else {
+            if (tvDirectionInputText != null) tvDirectionInputText.setText("Teacher • Santali (संथाली)");
+            if (tvDirectionOutputText != null) tvDirectionOutputText.setText("Student • Hindi (हिंदी)");
+            if (tvTeacherPanelTitle != null) tvTeacherPanelTitle.setText("Teacher (शिक्षक) • Santali");
+            if (tvTeacherStatus != null) tvTeacherStatus.setText("Enter or select Santali text");
+            if (tvTeacherInputLabel != null) tvTeacherInputLabel.setText("Santali Text / Input (संथाली इनपुट)");
+            if (tvTeacherRecognized != null) tvTeacherRecognized.setHint("Awaiting Santali speech or text...");
+            if (btnTranslate != null) btnTranslate.setText("अनुवाद करें (Translate to Hindi)");
+            if (tvFlowDividerText != null) tvFlowDividerText.setText("Santali → Hindi (संथाली → हिंदी)");
+            if (tvStudentPanelTitle != null) tvStudentPanelTitle.setText("Student (छात्र) • Hindi");
+            if (tvStudentOutputLabel != null) tvStudentOutputLabel.setText("Hindi Translation (हिंदी अनुवाद)");
+            if (tvStudentTranslated != null) tvStudentTranslated.setHint("Awaiting Hindi translation...");
+            if (tvPlaySantaliLabel != null) tvPlaySantaliLabel.setText("Play Hindi");
         }
     }
 
@@ -397,7 +807,7 @@ public class VoiceTranslationFragment extends Fragment {
         ivTeacherControlIcon.setImageTintList(ColorStateList.valueOf(onPrimaryColor));
         btnTeacherControl.setCardBackgroundColor(primaryColor);
         viewTeacherRipple.setVisibility(View.INVISIBLE);
-        tvTeacherStatus.setText(R.string.tap_to_speak_hindi);
+        tvTeacherStatus.setText(isHindiToSantali ? getString(R.string.tap_to_speak_hindi) : "Enter or select Santali text");
         badgeTeacherState.setText("Ready");
 
         if (badgeStudentState.getText().toString().equals("Waiting")) {

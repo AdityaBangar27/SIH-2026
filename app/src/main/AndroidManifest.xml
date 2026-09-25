@@ -72,6 +72,45 @@
             android:screenOrientation="portrait"
             android:parentActivityName=".MainActivity" />
 
+        <!-- Study Material Detail Screen -->
+        <activity
+            android:name=".ui.curriculum.detail.StudyMaterialDetailActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".MainActivity" />
+
+        <!-- Interactive Worksheet Detail & Testing Screen -->
+        <activity
+            android:name=".ui.worksheets.detail.WorksheetDetailActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".MainActivity" />
+
+        <!-- Deterministic Offline Worksheet Creator Screen -->
+        <activity
+            android:name=".ui.worksheets.create.CreateWorksheetActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".MainActivity" />
+
+        <!-- My Resources Offline File Management Screen -->
+        <activity
+            android:name=".ui.resources.MyResourcesActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".MainActivity" />
+
+        <!-- FileProvider for local study resources and PDFs -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
     </application>
 
 </manifest>

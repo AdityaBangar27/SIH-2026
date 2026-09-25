@@ -23,7 +23,9 @@ import com.vernacular.learning.utils.PreferenceHelper;
 
 public class HomeFragment extends Fragment {
     private TextView tvLanguagePairDisplay;
+    private TextView tvLanguageDirectionDetails;
     private String currentMotherTongue = "Santhali (ᱥᱟᱱᱛᱟᱲᱤ)";
+    private boolean isHindiToMotherTongue = true;
 
     @Nullable
     @Override
@@ -32,6 +34,8 @@ public class HomeFragment extends Fragment {
 
         ImageView btnDrawerMenu = root.findViewById(R.id.btnDrawerMenu);
         tvLanguagePairDisplay = root.findViewById(R.id.tvLanguagePairDisplay);
+        tvLanguageDirectionDetails = root.findViewById(R.id.tvLanguageDirectionDetails);
+        MaterialCardView btnHomeSwapDirection = root.findViewById(R.id.btnHomeSwapDirection);
         MaterialButton btnChangeLanguage = root.findViewById(R.id.btnChangeLanguage);
         MaterialCardView cardLiveTranslation = root.findViewById(R.id.cardLiveTranslation);
         MaterialCardView cardCurriculum = root.findViewById(R.id.cardCurriculum);
@@ -49,6 +53,17 @@ public class HomeFragment extends Fragment {
             }
         });
 
+        // Direction Swap Button
+        if (btnHomeSwapDirection != null) {
+            btnHomeSwapDirection.setOnClickListener(v -> {
+                isHindiToMotherTongue = !isHindiToMotherTongue;
+                updateLanguagePairDisplay();
+                Toast.makeText(requireContext(), isHindiToMotherTongue
+                        ? "दिशा: हिंदी ➔ संथाली"
+                        : "दिशा: संथाली ➔ हिंदी", Toast.LENGTH_SHORT).show();
+            });
+        }
+
         // 2. CHANGE LANGUAGE Button Click
         btnChangeLanguage.setOnClickListener(v -> showLanguagePickerDialog());
 
@@ -60,27 +75,76 @@ public class HomeFragment extends Fragment {
                     .commit();
         });
 
-        // 4. Curriculum Card Click
+        // 4. Curriculum Card Click -> Switches to Curriculum Tab
         cardCurriculum.setOnClickListener(v -> {
-            Intent intent = new Intent(requireContext(), LessonActivity.class);
-            intent.putExtra("CLASS_NAME", "Class 1");
-            intent.putExtra("SUBJECT_NAME", "Mathematics");
-            intent.putExtra("MOTHER_TONGUE", currentMotherTongue);
-            startActivity(intent);
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).selectTab(R.id.nav_lessons);
+            }
         });
 
-        // 5. Worksheets Card Click
+        // 5. Worksheets Card Click -> Switches to Worksheets Tab
         cardWorksheetsToolkit.setOnClickListener(v -> {
             if (getActivity() instanceof MainActivity) {
                 ((MainActivity) getActivity()).selectTab(R.id.nav_materials);
             }
         });
 
-        // 6. Flashcards Card Click
+        // 6. Flashcards Card Click -> Opens Flashcards Module
         cardFlashcardsToolkit.setOnClickListener(v -> {
             Intent intent = new Intent(requireContext(), FlashcardActivity.class);
             startActivity(intent);
         });
+
+        // 7. Recent Study Material Section Clicks
+        TextView tvViewAllCurriculum = root.findViewById(R.id.tvViewAllCurriculum);
+        if (tvViewAllCurriculum != null) {
+            tvViewAllCurriculum.setOnClickListener(v -> {
+                if (getActivity() instanceof MainActivity) {
+                    ((MainActivity) getActivity()).selectTab(R.id.nav_lessons);
+                }
+            });
+        }
+
+        MaterialCardView cardRecentStudyPlants = root.findViewById(R.id.cardRecentStudyPlants);
+        if (cardRecentStudyPlants != null) {
+            cardRecentStudyPlants.setOnClickListener(v -> {
+                Intent intent = new Intent(requireContext(), com.vernacular.learning.ui.curriculum.detail.StudyMaterialDetailActivity.class);
+                intent.putExtra("CLASS_NAME", "Class 3");
+                intent.putExtra("SUBJECT_NAME", "EVS");
+                intent.putExtra("TOPIC_NAME", "Plants Around Us");
+                startActivity(intent);
+            });
+        }
+
+        MaterialCardView cardRecentWorksheetMath = root.findViewById(R.id.cardRecentWorksheetMath);
+        if (cardRecentWorksheetMath != null) {
+            cardRecentWorksheetMath.setOnClickListener(v -> {
+                Intent intent = new Intent(requireContext(), com.vernacular.learning.ui.worksheets.detail.WorksheetDetailActivity.class);
+                intent.putExtra("CLASS_NAME", "Class 3");
+                intent.putExtra("SUBJECT_NAME", "Mathematics");
+                intent.putExtra("TOPIC_NAME", "Numbers and Addition");
+                startActivity(intent);
+            });
+        }
+
+        MaterialCardView cardRecentFlashcardsPlant = root.findViewById(R.id.cardRecentFlashcardsPlant);
+        if (cardRecentFlashcardsPlant != null) {
+            cardRecentFlashcardsPlant.setOnClickListener(v -> {
+                Intent intent = new Intent(requireContext(), FlashcardActivity.class);
+                intent.putExtra("CLASS_NAME", "Class 3");
+                intent.putExtra("SUBJECT_NAME", "EVS");
+                intent.putExtra("TOPIC_NAME", "Plants Around Us");
+                startActivity(intent);
+            });
+        }
+
+        MaterialCardView cardRecentMyResources = root.findViewById(R.id.cardRecentMyResources);
+        if (cardRecentMyResources != null) {
+            cardRecentMyResources.setOnClickListener(v -> {
+                Intent intent = new Intent(requireContext(), com.vernacular.learning.ui.resources.MyResourcesActivity.class);
+                startActivity(intent);
+            });
+        }
 
         return root;
     }
@@ -88,12 +152,25 @@ public class HomeFragment extends Fragment {
     private void updateLanguagePairDisplay() {
         if (tvLanguagePairDisplay == null) return;
 
+        String mtLabel;
         if (currentMotherTongue.contains("Mundari")) {
-            tvLanguagePairDisplay.setText("Hindi   ➔   Mundari  मुंडारी");
+            mtLabel = "मुंडारी (Mundari)";
         } else if (currentMotherTongue.contains("Ho")) {
-            tvLanguagePairDisplay.setText("Hindi   ➔   Ho  हो");
+            mtLabel = "हो (Ho)";
         } else {
-            tvLanguagePairDisplay.setText("Hindi   ➔   Santhali  संथाली");
+            mtLabel = "संथाली (Santali)";
+        }
+
+        if (isHindiToMotherTongue) {
+            tvLanguagePairDisplay.setText("हिंदी (Hindi) ➔ " + mtLabel);
+            if (tvLanguageDirectionDetails != null) {
+                tvLanguageDirectionDetails.setText("इनपुट: हिंदी (Teacher)  •  आउटपुट: " + mtLabel + " (Student)");
+            }
+        } else {
+            tvLanguagePairDisplay.setText(mtLabel + " ➔ हिंदी (Hindi)");
+            if (tvLanguageDirectionDetails != null) {
+                tvLanguageDirectionDetails.setText("इनपुट: " + mtLabel + " (Teacher)  •  आउटपुट: हिंदी (Student)");
+            }
         }
     }
 

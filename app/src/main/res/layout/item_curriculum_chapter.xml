@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardChapterItem"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginVertical="6dp"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardBackgroundColor="?attr/customCardColor"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="1dp"
+    app:strokeColor="?attr/customBorderColor"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <!-- Chapter Badge -->
+            <TextView
+                android:id="@+id/tvChapterNumberBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:background="@drawable/bg_tab_unselected"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="3dp"
+                android:text="अध्याय 1"
+                android:textColor="?attr/customPrimaryColor"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvOpenMaterialPrompt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:text="अध्ययन सामग्री खोलें ➔"
+                android:textColor="?attr/customPrimaryColor"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+        <!-- Chapter Title -->
+        <TextView
+            android:id="@+id/tvChapterTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="हमारे आसपास के पौधे"
+            android:textColor="?attr/customTextColor"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+
+        <!-- Learning Objective -->
+        <TextView
+            android:id="@+id/tvChapterObjective"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="सीखने का उद्देश्य: पौधों के महत्व और भागों की समझ।"
+            android:textColor="?attr/customTextSecondaryColor"
+            android:textSize="12sp" />
+
+        <!-- Feature Tags Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvConceptsCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/bg_tab_unselected"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:text="🌱 5 भाग"
+                android:textColor="?attr/customTextSecondaryColor"
+                android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/tvQuestionsCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/bg_tab_unselected"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:text="📝 10 प्रश्न"
+                android:textColor="?attr/customTextSecondaryColor"
+                android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/tvFlashcardsCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_tab_unselected"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:text="🎴 10 कार्ड"
+                android:textColor="?attr/customTextSecondaryColor"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

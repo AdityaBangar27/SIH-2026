@@ -11,3 +11,6 @@ captures/
 *.apk
 *.ap_
 *.dex
+__pycache__/
+scratch/
+*.pyc

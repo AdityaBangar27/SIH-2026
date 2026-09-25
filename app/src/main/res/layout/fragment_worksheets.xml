@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="?attr/customBackgroundColor">
 
-    <!-- Top Bar (Back arrow removed, title preserved with styling) -->
+    <!-- Top Bar -->
     <LinearLayout
         android:id="@+id/worksheetsTopBar"
         android:layout_width="match_parent"
@@ -22,7 +22,7 @@
             android:id="@+id/tvWorksheetsHeaderTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/worksheets_and_flashcards"
+            android:text="अभ्यास पत्रक और फ्लैशकार्ड"
             android:textColor="?attr/customTextColor"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -77,23 +77,64 @@
         android:id="@+id/layoutWorksheetsContent"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="10dp"
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tabContainer">
 
+        <!-- Worksheets Top Bar with + Create Worksheet Button -->
+        <RelativeLayout
+            android:id="@+id/layoutWorksheetsHeaderRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/tvWorksheetsCountLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:text="अभ्यास पत्रक"
+                android:textColor="?attr/customTextColor"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCreateWorksheet"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:backgroundTint="?attr/customPrimaryColor"
+                android:text="+ नया पत्रक बनाएँ"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:cornerRadius="19dp" />
+        </RelativeLayout>
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvWorksheets"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
             android:clipToPadding="false"
             android:paddingHorizontal="20dp"
             android:paddingBottom="24dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/layoutWorksheetsHeaderRow"
             tools:listitem="@layout/item_worksheet_card" />
 
-        <!-- Empty State View when no worksheets exist -->
+        <!-- Empty State View -->
         <LinearLayout
             android:id="@+id/layoutEmptyWorksheets"
             android:layout_width="wrap_content"
@@ -105,7 +146,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toBottomOf="@+id/layoutWorksheetsHeaderRow">
 
             <ImageView
                 android:layout_width="64dp"
@@ -118,7 +159,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:text="@string/empty_worksheets_title"
+                android:text="कोई अभ्यास पत्रक उपलब्ध नहीं है"
                 android:textColor="?attr/customTextColor"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -128,7 +169,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:gravity="center"
-                android:text="@string/empty_worksheets_desc"
+                android:text="ऑफ़लाइन नया पत्रक बनाने के लिए '+ नया पत्रक बनाएँ' पर टैप करें।"
                 android:textColor="?attr/customTextSecondaryColor"
                 android:textSize="12sp" />
         </LinearLayout>
@@ -139,19 +180,59 @@
         android:id="@+id/layoutFlashcardsContent"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginTop="10dp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tabContainer">
 
+        <!-- Top Action Row in Flashcards Tab -->
+        <RelativeLayout
+            android:id="@+id/layoutFlashcardsHeaderRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="4dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/tvFlashcardsTabTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:text="हमारे आसपास के पौधे"
+                android:textColor="?attr/customTextColor"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnOpenFullFlashcardModule"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:backgroundTint="?attr/customCardTintColor"
+                android:text="सभी डेक ➔"
+                android:textAllCaps="false"
+                android:textColor="?attr/customPrimaryColor"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                app:cornerRadius="18dp"
+                app:strokeColor="?attr/customPrimaryColor"
+                app:strokeWidth="1dp" />
+        </RelativeLayout>
+
         <!-- Main Flashcard (Centered Large Card) -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardFlashcardMain"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginHorizontal="28dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginHorizontal="24dp"
+            android:layout_marginTop="10dp"
             android:layout_marginBottom="16dp"
             android:clickable="true"
             android:focusable="true"
@@ -161,7 +242,7 @@
             app:layout_constraintBottom_toTopOf="@+id/flashcardControls"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/layoutFlashcardsHeaderRow"
             app:strokeColor="?attr/customBorderColor"
             app:strokeWidth="1dp">
 
@@ -172,42 +253,45 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
-                <ImageView
-                    android:id="@+id/ivFlashcardVisual"
-                    android:layout_width="140dp"
-                    android:layout_height="140dp"
-                    android:contentDescription="Flashcard illustration"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/ic_language" />
+                <TextView
+                    android:id="@+id/tvTabFlashcardVisual"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🌱"
+                    android:textSize="48sp" />
 
                 <TextView
                     android:id="@+id/tvFlashcardHindi"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="@string/flashcard_hindi_word"
+                    android:layout_marginTop="14dp"
+                    android:gravity="center"
+                    android:text="पौधों को बढ़ने के लिए क्या चाहिए?"
                     android:textColor="?attr/customTextColor"
-                    android:textSize="26sp"
+                    android:textSize="20sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvFlashcardTransliteration"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="@string/flashcard_transliteration"
-                    android:textColor="?attr/customTextSecondaryColor"
-                    android:textSize="14sp" />
+                    android:layout_marginTop="4dp"
+                    android:gravity="center"
+                    android:text="पौधे के मूल तत्व"
+                    android:textColor="?attr/customPrimaryColor"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvFlashcardEnglish"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="@string/flashcard_english_word"
+                    android:gravity="center"
+                    android:text="जल, धूप, हवा और पोषक तत्व।"
                     android:textColor="?attr/customTextSecondaryColor"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:textSize="14sp"
+                    android:visibility="gone" />
 
                 <TextView
                     android:id="@+id/tvFlashcardMotherTongue"
@@ -215,22 +299,22 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:background="@drawable/bg_pill_secondary"
-                    android:paddingHorizontal="16dp"
-                    android:paddingVertical="6dp"
-                    android:text="@string/flashcard_santhali_word"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="5dp"
+                    android:text="जल, धूप, हवा और पोषक तत्व"
                     android:textColor="?attr/customPrimaryColor"
-                    android:textSize="15sp"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     android:visibility="invisible" />
 
                 <ImageView
                     android:id="@+id/btnFlashcardAudio"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_marginTop="12dp"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:layout_marginTop="10dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="Play pronunciation"
-                    android:padding="8dp"
+                    android:padding="6dp"
                     android:src="@drawable/ic_speaker"
                     app:tint="?attr/customPrimaryColor" />
 
@@ -239,13 +323,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:text="@string/tap_to_reveal"
+                    android:text="उत्तर देखने के लिए टैप करें 🔄"
                     android:textColor="?attr/customTextSecondaryColor"
                     android:textSize="11sp" />
+
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Bottom Navigation Controls: <  1/10  > -->
+        <!-- Bottom Navigation Controls -->
         <LinearLayout
             android:id="@+id/flashcardControls"
             android:layout_width="wrap_content"
@@ -266,17 +351,17 @@
                 android:contentDescription="Previous Card"
                 android:focusable="true"
                 android:padding="8dp"
-                android:src="@drawable/ic_arrow_left"
+                android:src="@drawable/ic_back"
                 app:tint="?attr/customPrimaryColor" />
 
             <TextView
                 android:id="@+id/tvCardCounter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="24dp"
-                android:text="@string/flashcard_counter_sample"
+                android:layout_marginHorizontal="20dp"
+                android:text="1 / 10"
                 android:textColor="?attr/customTextColor"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
             <ImageView
@@ -288,11 +373,12 @@
                 android:contentDescription="Next Card"
                 android:focusable="true"
                 android:padding="8dp"
-                android:src="@drawable/ic_arrow_right"
+                android:rotation="180"
+                android:src="@drawable/ic_back"
                 app:tint="?attr/customPrimaryColor" />
         </LinearLayout>
 
-        <!-- Empty State View when no flashcards exist -->
+        <!-- Empty State View -->
         <LinearLayout
             android:id="@+id/layoutEmptyFlashcards"
             android:layout_width="wrap_content"
@@ -304,33 +390,22 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toBottomOf="@+id/layoutFlashcardsHeaderRow">
 
             <ImageView
                 android:layout_width="64dp"
                 android:layout_height="64dp"
-                android:contentDescription="No flashcards"
-                android:src="@drawable/ic_language"
+                android:src="@drawable/ic_apple_single"
                 app:tint="?attr/customTextSecondaryColor" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:gravity="center"
-                android:text="@string/empty_flashcards_title"
+                android:text="कोई फ्लैशकार्ड उपलब्ध नहीं है"
                 android:textColor="?attr/customTextColor"
                 android:textSize="18sp"
                 android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:gravity="center"
-                android:text="@string/empty_flashcards_desc"
-                android:textColor="?attr/customTextSecondaryColor"
-                android:textSize="13sp" />
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

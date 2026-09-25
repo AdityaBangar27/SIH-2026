@@ -16,11 +16,26 @@ import com.vernacular.learning.data.models.WorksheetItem;
 import java.util.List;
 
 public class WorksheetAdapter extends RecyclerView.Adapter<WorksheetAdapter.WorksheetViewHolder> {
+
+    public interface OnWorksheetClickListener {
+        void onWorksheetClick(WorksheetItem item, int position);
+    }
+
     private final List<WorksheetItem> items;
     private final Handler handler = new Handler(Looper.getMainLooper());
+    private OnWorksheetClickListener listener;
 
     public WorksheetAdapter(List<WorksheetItem> items) {
         this.items = items;
+    }
+
+    public WorksheetAdapter(List<WorksheetItem> items, OnWorksheetClickListener listener) {
+        this.items = items;
+        this.listener = listener;
+    }
+
+    public void setOnWorksheetClickListener(OnWorksheetClickListener listener) {
+        this.listener = listener;
     }
 
     @NonNull
@@ -44,52 +59,37 @@ public class WorksheetAdapter extends RecyclerView.Adapter<WorksheetAdapter.Work
             holder.ivPreview.setVisibility(View.GONE);
             holder.tvMathPreview.setVisibility(View.VISIBLE);
             holder.tvMathPreview.setText(item.textPreview);
+        } else {
+            holder.ivPreview.setVisibility(View.VISIBLE);
+            holder.tvMathPreview.setVisibility(View.GONE);
+            holder.ivPreview.setImageResource(R.drawable.ic_worksheet_quick);
         }
 
         if (item.isDownloaded) {
             holder.pbDownload.setVisibility(View.GONE);
-            holder.btnDownload.setText(R.string.downloaded_state);
-            holder.btnDownload.setEnabled(false);
-            holder.btnDownload.setAlpha(0.85f);
+            holder.btnDownload.setText("Practice / View Worksheet");
+            holder.btnDownload.setEnabled(true);
+            holder.btnDownload.setAlpha(1.0f);
         } else if (item.isDownloading) {
             holder.pbDownload.setVisibility(View.VISIBLE);
             holder.pbDownload.setProgress(item.downloadProgress);
-            holder.btnDownload.setText("Downloading... " + item.downloadProgress + "%");
+            holder.btnDownload.setText("Preparing... " + item.downloadProgress + "%");
             holder.btnDownload.setEnabled(false);
         } else {
             holder.pbDownload.setVisibility(View.GONE);
-            holder.btnDownload.setText(R.string.btn_download_pdf);
+            holder.btnDownload.setText("Practice / View Worksheet");
             holder.btnDownload.setEnabled(true);
             holder.btnDownload.setAlpha(1.0f);
         }
 
-        holder.btnDownload.setOnClickListener(v -> {
-            if (!item.isDownloaded && !item.isDownloading) {
-                simulateDownload(item, position);
-            }
-        });
-    }
-
-    private void simulateDownload(WorksheetItem item, int position) {
-        item.isDownloading = true;
-        item.downloadProgress = 0;
-        notifyItemChanged(position);
-
-        Runnable progressStep = new Runnable() {
-            @Override
-            public void run() {
-                item.downloadProgress += 25;
-                if (item.downloadProgress >= 100) {
-                    item.isDownloading = false;
-                    item.isDownloaded = true;
-                    notifyItemChanged(position);
-                } else {
-                    notifyItemChanged(position);
-                    handler.postDelayed(this, 300);
-                }
+        View.OnClickListener clickAction = v -> {
+            if (listener != null) {
+                listener.onWorksheetClick(item, position);
             }
         };
-        handler.postDelayed(progressStep, 300);
+
+        holder.itemView.setOnClickListener(clickAction);
+        holder.btnDownload.setOnClickListener(clickAction);
     }
 
     @Override
@@ -105,7 +105,7 @@ public class WorksheetAdapter extends RecyclerView.Adapter<WorksheetAdapter.Work
         ProgressBar pbDownload;
         MaterialButton btnDownload;
 
-        public WorksheetViewHolder(@NonNull View itemView) {
+        WorksheetViewHolder(@NonNull View itemView) {
             super(itemView);
             tvTitle = itemView.findViewById(R.id.tvWorksheetTitle);
             tvSubtitle = itemView.findViewById(R.id.tvWorksheetSubtitle);

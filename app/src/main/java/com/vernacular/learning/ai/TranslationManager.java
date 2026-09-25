@@ -119,10 +119,28 @@ public class TranslationManager {
     }
 
     /**
-     * Translates Hindi Devanagari text into Santali Ol Chiki text.
+     * Translates text between Hindi and Santali depending on direction.
+     * Default: Hindi -> Santali.
      */
-    public synchronized String translate(String hindiText) {
-        if (hindiText == null || hindiText.trim().isEmpty()) {
+    public synchronized String translate(String text) {
+        return translate(text, true);
+    }
+
+    /**
+     * Translates text with explicit direction flag.
+     * @param isHindiToSantali true for Hindi -> Santali, false for Santali -> Hindi.
+     */
+    public synchronized String translate(String text, boolean isHindiToSantali) {
+        long srcLangId = isHindiToSantali ? HIN_DEVA_ID : SAT_OLCK_ID;
+        long tgtLangId = isHindiToSantali ? SAT_OLCK_ID : HIN_DEVA_ID;
+        return translate(text, srcLangId, tgtLangId);
+    }
+
+    /**
+     * Core neural translation method handling both Hindi -> Santali and Santali -> Hindi.
+     */
+    public synchronized String translate(String text, long srcLangId, long tgtLangId) {
+        if (text == null || text.trim().isEmpty()) {
             return "";
         }
 
@@ -134,8 +152,8 @@ public class TranslationManager {
         try {
             OrtEnvironment env = ModelManager.getInstance().getEnvironment();
 
-            // 1. Tokenize source Hindi text with SentencePiece BPE prefix
-            List<Long> inputTokenIds = tokenizeSource(hindiText.trim());
+            // 1. Tokenize source text with SentencePiece BPE prefix
+            List<Long> inputTokenIds = tokenizeSource(text.trim(), srcLangId, tgtLangId);
 
             int seqLen = inputTokenIds.size();
             long[] inputIdsArr = new long[seqLen];
@@ -244,13 +262,18 @@ public class TranslationManager {
         }
     }
 
-    /**
-     * Greedy SentencePiece BPE tokenizer mapping Hindi words into model token IDs.
-     */
     private List<Long> tokenizeSource(String input) {
+        return tokenizeSource(input, HIN_DEVA_ID, SAT_OLCK_ID);
+    }
+
+    /**
+     * Greedy SentencePiece BPE tokenizer mapping source words into model token IDs
+     * with specified source and target language prefix tokens.
+     */
+    private List<Long> tokenizeSource(String input, long srcLangId, long tgtLangId) {
         List<Long> ids = new ArrayList<>();
-        ids.add(HIN_DEVA_ID);
-        ids.add(SAT_OLCK_ID);
+        ids.add(srcLangId);
+        ids.add(tgtLangId);
 
         String[] words = input.split("\\s+");
         for (String w : words) {

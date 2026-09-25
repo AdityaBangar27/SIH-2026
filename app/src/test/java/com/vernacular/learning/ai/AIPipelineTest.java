@@ -105,6 +105,42 @@ public class AIPipelineTest {
     }
 
     @Test
+    public void testSanthaliG2PPhonemizerLinguisticRules() {
+        TTSManager tts = new TTSManager();
+
+        // 1. Classroom Greeting
+        assertEquals("ɟɔhar", tts.santhaliToIpa("ᱡᱚᱦᱟᱨ"));
+
+        // 2. Sit down (FLN command)
+        assertEquals("duɽub me", tts.santhaliToIpa("ᱫᱩᱲᱩᱵ ᱢᱮ"));
+
+        // 3. Very good (FLN praise with low vowels and aspirated consonant)
+        assertEquals("əɖi bʰəɡi", tts.santhaliToIpa("ᱟᱹᱰᱤ ᱵᱷᱟᱹᱜᱤ"));
+
+        // 4. Open book (with Ohod deglottalization and Oh aspiration)
+        assertEquals("pɔtɔb ɟʰiɟ me", tts.santhaliToIpa("ᱯᱚᱛᱚᱵ ᱡᱷᱤᱡᱽ ᱢᱮ"));
+
+        // 5. Count (FLN numeracy)
+        assertEquals("lekʰaj me", tts.santhaliToIpa("ᱞᱮᱠᱷᱟᱭ ᱢᱮ"));
+
+        // 6. Numerals conversion
+        String numeralsIpa = tts.santhaliToIpa("᱑ ᱒ ᱓");
+        assertTrue(numeralsIpa.contains("mid"));
+        assertTrue(numeralsIpa.contains("bar"));
+        assertTrue(numeralsIpa.contains("pe"));
+
+        // 7. Verify no unmapped Ol Chiki codepoints (U+1C50 - U+1C7F) remain in IPA
+        String testPhrase = "ᱥᱮᱪᱮᱫ ᱦᱩᱭᱩᱜ ᱠᱟᱱᱟ ᱦᱚᱲ ᱠᱚᱣᱟᱜ ᱡᱤᱭᱚᱱ ᱨᱮᱭᱟᱜ ᱡᱚᱛᱚ ᱠᱷᱚᱱ ᱞᱟᱹᱠᱛᱤᱭᱟᱱ ᱫᱟᱲᱮ ᱟᱨ ᱱᱚᱶᱟ ᱫᱚ ᱤᱧᱟᱹᱜ ᱮ ᱪᱟᱞᱟᱣ ᱮᱫᱟ ᱾";
+        String ipa = tts.santhaliToIpa(testPhrase);
+        assertNotNull(ipa);
+        assertFalse(ipa.isEmpty());
+        for (int i = 0; i < ipa.length(); i++) {
+            char c = ipa.charAt(i);
+            assertFalse("No Ol Chiki codepoints should remain unmapped: " + c, c >= 0x1C50 && c <= 0x1C7F);
+        }
+    }
+
+    @Test
     public void testAudioProcessorFeatureExtraction() {
         AudioProcessor processor = new AudioProcessor();
         float[] dummyAudio = new float[16000]; // 1 second of silent audio at 16kHz
@@ -225,5 +261,75 @@ public class AIPipelineTest {
         assertTrue("किताब खोलो must be present in verified dictionary",
                 TwoWayTranslationHelper.hasVerifiedTranslation("किताब खोलो"));
         assertEquals("ᱯᱩᱛᱷᱤ ᱡᱷᱤᱡᱽ ᱢᱮ", TwoWayTranslationHelper.getVerifiedTranslation("किताब खोलो"));
+    }
+
+    @Test
+    public void testTTSHindiDevanagariG2PAndPhonemization() throws Exception {
+        TTSManager tts = TTSManager.getInstance();
+        File configFile = new File("src/main/assets/models/tts/sat_piper_model.onnx.json");
+        if (!configFile.exists()) {
+            configFile = new File("app/src/main/assets/models/tts/sat_piper_model.onnx.json");
+        }
+        assertTrue("sat_piper_model.onnx.json must exist in assets", configFile.exists());
+        try (InputStream is = new FileInputStream(configFile)) {
+            tts.loadConfig(is);
+        }
+
+        // Test 1: मेरा भारत महान है।
+        String ipa1 = tts.hindiToIpa("मेरा भारत महान है।");
+        assertNotNull(ipa1);
+        assertTrue("Must contain 'm'", ipa1.contains("m"));
+        assertTrue("Must contain 'bʰ'", ipa1.contains("bʰ"));
+        List<Long> ids1 = tts.textToPhonemeIds("मेरा भारत महान है।");
+        assertNotNull(ids1);
+        assertTrue("Sequence length must be realistic for Hindi sentence (>25)", ids1.size() > 25);
+        assertEquals(Long.valueOf(1L), ids1.get(0)); // BOS
+        assertEquals(Long.valueOf(2L), ids1.get(ids1.size() - 1)); // EOS
+
+        // Test 2: पौधे हमारे लिए बहुत महत्वपूर्ण हैं।
+        String ipa2 = tts.hindiToIpa("पौधे हमारे लिए बहुत महत्वपूर्ण हैं।");
+        assertNotNull(ipa2);
+        assertTrue("Must contain 'dʰ'", ipa2.contains("dʰ"));
+        List<Long> ids2 = tts.textToPhonemeIds("पौधे हमारे लिए बहुत महत्वपूर्ण हैं।");
+        assertNotNull(ids2);
+        assertTrue("Sequence length must be realistic for multi-word sentence (>40)", ids2.size() > 40);
+
+        // Test 3: पानी जीवन के लिए आवश्यक है।
+        String ipa3 = tts.hindiToIpa("पानी जीवन के लिए आवश्यक है।");
+        assertNotNull(ipa3);
+        assertTrue("Must contain 'p'", ipa3.contains("p"));
+        List<Long> ids3 = tts.textToPhonemeIds("पानी जीवन के लिए आवश्यक है।");
+        assertNotNull(ids3);
+        assertTrue("Sequence length must be realistic (>35)", ids3.size() > 35);
+
+        // Test 4: Long Hindi curriculum paragraph
+        String para = "पौधे हमारे पर्यावरण के सबसे महत्वपूर्ण अंग हैं। वे हमें ऑक्सीजन, भोजन और छाया प्रदान करते हैं।";
+        List<Long> idsPara = tts.textToPhonemeIds(para);
+        assertNotNull(idsPara);
+        assertTrue("Paragraph sequence must be long (>100 tokens)", idsPara.size() > 100);
+    }
+
+    @Test
+    public void testAtomicPhonemeSplittingPrevention() throws Exception {
+        TTSManager tts = TTSManager.getInstance();
+        File configFile = new File("src/main/assets/models/tts/sat_piper_model.onnx.json");
+        if (!configFile.exists()) {
+            configFile = new File("app/src/main/assets/models/tts/sat_piper_model.onnx.json");
+        }
+        try (InputStream is = new FileInputStream(configFile)) {
+            tts.loadConfig(is);
+        }
+
+        // Test that aspirated 'bʰ' in "ᱵᱷᱟᱨᱚᱛ" or "भारत" is atomic without pad 0 between 'b' and 'ʰ'
+        List<Long> ids = tts.textToPhonemeIds("ᱵᱷᱟᱨᱚᱛ");
+        // b is 15, ʰ is 145. Check that [15, 145] appears consecutively without 0 between them
+        boolean foundAtomicBh = false;
+        for (int i = 0; i < ids.size() - 1; i++) {
+            if (ids.get(i) == 15L && ids.get(i + 1) == 145L) {
+                foundAtomicBh = true;
+                break;
+            }
+        }
+        assertTrue("Aspirated plosive 'bʰ' must appear atomically without internal pad 0", foundAtomicBh);
     }
 }
