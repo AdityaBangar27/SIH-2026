@@ -99,12 +99,14 @@ public class FlashcardActivity extends AppCompatActivity {
 
         // Tap to flip
         cardMain.setOnClickListener(v -> {
+            AudioHelper.stopPlayback();
             isBackShowing = !isBackShowing;
             updateCardDisplay();
         });
 
         // Prev
         btnPrev.setOnClickListener(v -> {
+            AudioHelper.stopPlayback();
             if (currentIndex > 0) {
                 currentIndex--;
                 isBackShowing = false;
@@ -114,6 +116,7 @@ public class FlashcardActivity extends AppCompatActivity {
 
         // Next
         btnNext.setOnClickListener(v -> {
+            AudioHelper.stopPlayback();
             if (currentIndex < currentDeck.size() - 1) {
                 currentIndex++;
                 isBackShowing = false;
@@ -123,6 +126,7 @@ public class FlashcardActivity extends AppCompatActivity {
 
         // Restart
         btnRestartDeck.setOnClickListener(v -> {
+            AudioHelper.stopPlayback();
             currentIndex = 0;
             isBackShowing = false;
             updateCardDisplay();
@@ -296,5 +300,17 @@ public class FlashcardActivity extends AppCompatActivity {
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        AudioHelper.stopPlayback();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        AudioHelper.stopPlayback();
     }
 }

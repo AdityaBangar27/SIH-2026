@@ -1,6 +1,8 @@
 package com.vernacular.learning.ai;
 
 import android.content.Context;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import android.util.Log;
 import ai.onnxruntime.OnnxTensor;
 import ai.onnxruntime.OrtEnvironment;
@@ -10,6 +12,7 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,7 +26,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Text-to-Speech Manager for local offline Santali speech synthesis.
@@ -56,7 +62,7 @@ public class TTSManager {
     private int sampleRate = 16000;
     // Calibrated Piper VITS inference hyperparameters matching trained acoustic generator
     private float noiseScale = 0.667f;
-    private float lengthScale = 1.0f;
+    private float lengthScale = 0.75f; // Calibrated for natural fluent speech rate
     private float noiseW = 0.800f;
     private long bosId = 1L;
     private long eosId = 2L;
@@ -66,7 +72,7 @@ public class TTSManager {
     private boolean isInitialized = false;
 
     // Android offline Hindi TTS engine fallback
-    private android.speech.tts.TextToSpeech hindiTtsEngine;
+    private TextToSpeech hindiTtsEngine;
     private volatile boolean isHindiTtsAvailable = false;
 
     // --- Multi-character Atomic IPA Phonemes ---
@@ -281,12 +287,12 @@ public class TTSManager {
             // 3. Initialize offline Android Hindi TTS
             try {
                 if (context != null) {
-                    hindiTtsEngine = new android.speech.tts.TextToSpeech(context.getApplicationContext(), status -> {
-                        if (status == android.speech.tts.TextToSpeech.SUCCESS && hindiTtsEngine != null) {
-                            int r = hindiTtsEngine.setLanguage(new java.util.Locale("hi", "IN"));
-                            if (r == android.speech.tts.TextToSpeech.LANG_MISSING_DATA ||
-                                r == android.speech.tts.TextToSpeech.LANG_NOT_SUPPORTED) {
-                                hindiTtsEngine.setLanguage(new java.util.Locale("hi"));
+                    hindiTtsEngine = new TextToSpeech(context.getApplicationContext(), status -> {
+                        if (status == TextToSpeech.SUCCESS && hindiTtsEngine != null) {
+                            int r = hindiTtsEngine.setLanguage(new Locale("hi", "IN"));
+                            if (r == TextToSpeech.LANG_MISSING_DATA ||
+                                r == TextToSpeech.LANG_NOT_SUPPORTED) {
+                                hindiTtsEngine.setLanguage(new Locale("hi"));
                             }
                             isHindiTtsAvailable = true;
                             Log.i(TAG, "Android offline Hindi TTS initialized successfully.");
@@ -376,7 +382,7 @@ public class TTSManager {
                     localAsset = new File("app/src/main/assets/" + CONFIG_ASSET);
                 }
                 if (localAsset.exists()) {
-                    is = new java.io.FileInputStream(localAsset);
+                    is = new FileInputStream(localAsset);
                 } else {
                     throw e;
                 }
@@ -435,6 +441,47 @@ public class TTSManager {
             }
         }
         return false;
+    }
+
+    /**
+     * Formats comprehensive Unicode code point analysis for diagnostic tracing.
+     */
+    public static String formatUnicodeAnalysis(String text) {
+        if (text == null) return "null";
+        StringBuilder sb = new StringBuilder();
+        sb.append("character count: ").append(text.length()).append("\n");
+        sb.append("UTF-8 byte count: ").append(text.getBytes(StandardCharsets.UTF_8).length).append("\n");
+        sb.append("Unicode normalization: ").append(Normalizer.isNormalized(text, Normalizer.Form.NFC) ? "NFC" : "Not NFC").append("\n");
+        boolean hasLeadingTrailingWs = !text.isEmpty() && (Character.isWhitespace(text.charAt(0)) || Character.isWhitespace(text.charAt(text.length() - 1)));
+        sb.append("leading/trailing whitespace: ").append(hasLeadingTrailingWs ? "yes" : "no").append("\n");
+        boolean hasNewline = text.contains("\n") || text.contains("\r");
+        sb.append("newline characters: ").append(hasNewline ? "yes" : "no").append("\n");
+
+        boolean hasZeroWidth = false;
+        List<String> codePoints = new ArrayList<>();
+        List<String> specialChars = new ArrayList<>();
+        int i = 0;
+        int len = text.length();
+        while (i < len) {
+            int cp = text.codePointAt(i);
+            codePoints.add(String.format(Locale.US, "U+%04X", cp));
+            if (cp == 0x200B || cp == 0x200C || cp == 0x200D || cp == 0xFEFF) {
+                hasZeroWidth = true;
+            }
+            int type = Character.getType(cp);
+            if (type == Character.OTHER_PUNCTUATION || type == Character.MATH_SYMBOL || type == Character.MODIFIER_SYMBOL) {
+                specialChars.add(String.format(Locale.US, "U+%04X (%s)", cp, new String(Character.toChars(cp))));
+            }
+            i += Character.charCount(cp);
+        }
+        sb.append("zero-width characters: ").append(hasZeroWidth ? "yes" : "no").append("\n");
+        sb.append("punctuation: ").append(specialChars.isEmpty() ? "none" : specialChars.toString()).append("\n");
+        sb.append("special Unicode characters: ").append(specialChars.isEmpty() ? "none" : specialChars.toString()).append("\n");
+        sb.append("Unicode code points:\n");
+        for (String cpStr : codePoints) {
+            sb.append(cpStr).append("\n");
+        }
+        return sb.toString();
     }
 
     /**
@@ -618,16 +665,20 @@ public class TTSManager {
      * and places silence pad tokens ONLY after the complete atomic phoneme, preventing clicks and fragmented syllables.
      */
     public List<Long> textToPhonemeIds(String text) {
+        return textToPhonemeIds(text, containsDevanagari(text) ? "Hindi" : "Santali");
+    }
+
+    public List<Long> textToPhonemeIds(String text, String language) {
         List<Long> ids = new ArrayList<>();
-        ids.add(bosId);
+        ids.add(bosId); // Standard Piper VITS sequence: [bos, phoneme1, pad, phoneme2, pad, ..., eos]
 
         if (text != null && !text.trim().isEmpty()) {
-            String ipa;
-            if (containsDevanagari(text)) {
-                ipa = hindiToIpa(text);
-            } else {
-                ipa = santhaliToIpa(text);
-            }
+            boolean isHindi = "Hindi".equalsIgnoreCase(language) || "hi".equalsIgnoreCase(language) ||
+                    (language == null && containsDevanagari(text));
+            String ipa = isHindi ? hindiToIpa(text) : santhaliToIpa(text);
+
+            List<String> unknownChars = new ArrayList<>();
+            List<String> unknownPhones = new ArrayList<>();
 
             int i = 0;
             int len = ipa.length();
@@ -642,10 +693,12 @@ public class TTSManager {
                             String sub = multiPhone.substring(k, k + cc);
                             if (phonemeIdMap.containsKey(sub)) {
                                 ids.addAll(phonemeIdMap.get(sub));
+                            } else {
+                                unknownPhones.add(sub);
                             }
                             k += cc;
                         }
-                        ids.add(padId); // Pad token ONLY after the complete atomic phoneme
+                        ids.add(padId); // Pad token after atomic phoneme
                         i += multiPhone.length();
                         matchedMulti = true;
                         break;
@@ -671,10 +724,16 @@ public class TTSManager {
                     if (phonemeIdMap.containsKey(ch)) {
                         ids.addAll(phonemeIdMap.get(ch));
                         ids.add(padId);
+                    } else {
+                        unknownChars.add(ch);
                     }
                 }
                 i += charCount;
             }
+
+            Log.i(TAG, String.format(Locale.US,
+                    "\n[G2P]\nInput: %s\nLanguage: %s\nCharacters: %d\nPhoneme string: %s\nPhoneme count: %d\nUnknown characters: %s\nUnknown phonemes: %s\nPhoneme IDs: %s\nID count: %d",
+                    text, language, text.length(), ipa, ipa.length(), unknownChars.toString(), unknownPhones.toString(), ids.toString(), ids.size()));
         }
 
         ids.add(eosId);
@@ -707,7 +766,11 @@ public class TTSManager {
      * Synthesizes a single sentence to raw float PCM samples using Piper VITS ONNX session.
      */
     private float[] synthesizeSentenceSamples(String cleanSentence) throws Exception {
-        List<Long> phonemeIds = textToPhonemeIds(cleanSentence);
+        return synthesizeSentenceSamples(cleanSentence, "Santali");
+    }
+
+    private float[] synthesizeSentenceSamples(String cleanSentence, String language) throws Exception {
+        List<Long> phonemeIds = textToPhonemeIds(cleanSentence, language);
         int seqLen = phonemeIds.size();
         if (seqLen <= 2) {
             return new float[0];
@@ -754,6 +817,11 @@ public class TTSManager {
      * @return File referencing generated WAV, or null if synthesis failed.
      */
     public synchronized File synthesize(String text, File outputFile) {
+        String lang = containsDevanagari(text) ? "Hindi" : "Santali";
+        return synthesize(text, lang, outputFile);
+    }
+
+    public synchronized File synthesize(String text, String language, File outputFile) {
         if (!isAvailable()) {
             Log.w(TAG, "Cannot synthesize: TTS is not available.");
             return null;
@@ -767,15 +835,31 @@ public class TTSManager {
         long t0 = System.currentTimeMillis();
         String cleanText = text.trim();
 
-        Log.i(TAG, "Synthesizing text [" + cleanText.length() + " chars]: '" + cleanText + "'");
+        Log.i(TAG, "TTS_LANGUAGE_REQUESTED: " + language);
+        String resolvedLang = "Santali";
+        if ("Hindi".equalsIgnoreCase(language) || "hi".equalsIgnoreCase(language) ||
+                (language == null && containsDevanagari(cleanText))) {
+            resolvedLang = "Hindi";
+        }
+        Log.i(TAG, "TTS_LANGUAGE_RESOLVED: " + resolvedLang);
+        Log.i(TAG, "TTS_MODEL_SELECTED: " + ("Hindi".equals(resolvedLang) ? "Android System Hindi TTS / sat_piper_model.onnx" : MODEL_ASSET));
+
+        Log.i(TAG, "Synthesizing text [" + cleanText.length() + " chars]: '" + cleanText + "' (" + resolvedLang + ")");
 
         try {
+            if (outputFile != null) {
+                File parent = outputFile.getParentFile();
+                if (parent != null && !parent.exists()) {
+                    parent.mkdirs();
+                }
+            }
+
             List<String> sentences = splitSentences(cleanText);
             List<float[]> sentenceOutputs = new ArrayList<>();
             int totalSamples = 0;
 
             for (int s = 0; s < sentences.size(); s++) {
-                float[] chunk = synthesizeSentenceSamples(sentences.get(s));
+                float[] chunk = synthesizeSentenceSamples(sentences.get(s), resolvedLang);
                 if (chunk.length > 0) {
                     sentenceOutputs.add(chunk);
                     totalSamples += chunk.length;
@@ -787,34 +871,46 @@ public class TTSManager {
                 return null;
             }
 
-            // Trailing fade-out padding (80ms = 1280 samples) to prevent Android hardware buffer cutoff
-            int trailingPadSamples = (int) (sampleRate * 0.08f);
-            int finalSampleCount = totalSamples + trailingPadSamples;
+            int interSentencePause = (int) (sampleRate * 0.10f); // 100ms pause between sentences
+            int rawSampleCount = 0;
+            for (float[] chunk : sentenceOutputs) {
+                rawSampleCount += chunk.length;
+            }
+
+            int pauseCount = Math.max(0, sentenceOutputs.size() - 1);
+            int trailingPadSamples = (int) (sampleRate * 0.08f); // 80ms trailing pad
+            int finalSampleCount = rawSampleCount + (pauseCount * interSentencePause) + trailingPadSamples;
 
             float[] allSamples = new float[finalSampleCount];
             int offset = 0;
+            int fadeBoundarySamples = (int) (sampleRate * 0.005f); // 5ms fade-in/fade-out
+
             for (int s = 0; s < sentenceOutputs.size(); s++) {
                 float[] chunk = sentenceOutputs.get(s);
+                applyFadeInFadeOut(chunk, fadeBoundarySamples);
                 System.arraycopy(chunk, 0, allSamples, offset, chunk.length);
                 offset += chunk.length;
+                if (s < sentenceOutputs.size() - 1) {
+                    offset += interSentencePause; // Add 100ms silence gap
+                }
             }
 
             // Apply smooth linear decay across trailing pad
-            float lastVal = (totalSamples > 0) ? allSamples[totalSamples - 1] : 0.0f;
+            float lastVal = (rawSampleCount > 0) ? allSamples[Math.max(0, offset - 1)] : 0.0f;
             for (int t = 0; t < trailingPadSamples; t++) {
                 float fade = 1.0f - ((float) t / trailingPadSamples);
-                allSamples[totalSamples + t] = lastVal * fade;
+                allSamples[offset + t] = lastVal * fade;
             }
 
-            // Audio waveform statistics & true peak normalization
+            // Waveform peak measurement & soft normalization
             float peakAmp = 0.0f;
             for (float val : allSamples) {
                 float abs = Math.abs(val);
                 if (abs > peakAmp) peakAmp = abs;
             }
 
-            float targetPeak = 0.92f;
-            float scaleFactor = (peakAmp > 0.01f) ? Math.min(3.5f, targetPeak / peakAmp) : 1.0f;
+            float targetPeak = 0.90f;
+            float scaleFactor = (peakAmp > 0.01f) ? Math.min(1.5f, targetPeak / peakAmp) : 1.0f;
 
             short[] pcmData = new short[finalSampleCount];
             for (int i = 0; i < finalSampleCount; i++) {
@@ -829,8 +925,8 @@ public class TTSManager {
 
             float audioDurationSec = (float) finalSampleCount / sampleRate;
             long totalDuration = System.currentTimeMillis() - t0;
-            Log.i(TAG, String.format("TTS synthesis finished in %d ms | Audio: %.2fs (%d sentences, peak: %.2f) | File: %d bytes",
-                    totalDuration, audioDurationSec, sentences.size(), peakAmp * scaleFactor, outputFile.length()));
+            Log.i(TAG, String.format(Locale.US, "TTS GENERATION COMPLETE | Text: '%s' | Time: %d ms | Audio: %.2fs (%d sentences, peak: %.2f) | File: %d bytes",
+                    cleanText, totalDuration, audioDurationSec, sentences.size(), peakAmp * scaleFactor, outputFile.length()));
 
             if (outputFile.exists() && outputFile.length() > 44 && audioDurationSec > 0.1f) {
                 return outputFile;
@@ -845,17 +941,69 @@ public class TTSManager {
         }
     }
 
+    private void applyFadeInFadeOut(float[] samples, int fadeSamples) {
+        if (samples == null || samples.length == 0 || fadeSamples <= 0) return;
+        int fadeLen = Math.min(fadeSamples, samples.length / 2);
+        for (int i = 0; i < fadeLen; i++) {
+            float factor = (float) i / fadeLen;
+            samples[i] *= factor;
+            samples[samples.length - 1 - i] *= factor;
+        }
+    }
+
     /**
      * Synthesizes Hindi text to a local WAV audio file.
-     * Uses offline on-device Piper neural TTS with Hindi G2P, with automatic
-     * fallback to Android offline TextToSpeech.
+     * Uses Android system TextToSpeech engine (hi-IN) for natural native Hindi speech,
+     * with fallback to offline Piper neural TTS with Hindi G2P.
      */
     public synchronized boolean synthesizeHindi(String hindiText, File outputFile) {
         if (hindiText == null || hindiText.trim().isEmpty()) {
             return false;
         }
 
-        // 1. Try offline on-device Piper neural TTS with Hindi G2P first
+        // 1. Try Android system TextToSpeech (hi-IN) for crystal-clear native Hindi speech
+        if (hindiTtsEngine != null && isHindiTtsAvailable) {
+            try {
+                CountDownLatch latch = new CountDownLatch(1);
+                String utteranceId = "hi_tts_" + System.currentTimeMillis();
+
+                hindiTtsEngine.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+                    @Override
+                    public void onStart(String id) {}
+
+                    @Override
+                    public void onDone(String id) {
+                        if (utteranceId.equals(id)) {
+                            latch.countDown();
+                        }
+                    }
+
+                    @Override
+                    public void onError(String id) {
+                        if (utteranceId.equals(id)) {
+                            latch.countDown();
+                        }
+                    }
+                });
+
+                File parent = outputFile.getParentFile();
+                if (parent != null && !parent.exists()) {
+                    parent.mkdirs();
+                }
+
+                int res = hindiTtsEngine.synthesizeToFile(hindiText, null, outputFile, utteranceId);
+                if (res == TextToSpeech.SUCCESS) {
+                    boolean completed = latch.await(4, TimeUnit.SECONDS);
+                    if (completed && outputFile.exists() && outputFile.length() > 44) {
+                        return true;
+                    }
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "Android system Hindi TTS synthesis error: " + e.getMessage());
+            }
+        }
+
+        // 2. Fallback to offline Piper neural TTS if available
         if (isAvailable()) {
             File generated = synthesize(hindiText, outputFile);
             if (generated != null && generated.exists() && generated.length() > 44) {
@@ -863,48 +1011,6 @@ public class TTSManager {
             }
         }
 
-        // 2. Fallback to Android system TextToSpeech if available
-        if (hindiTtsEngine == null || !isHindiTtsAvailable) {
-            Log.w(TAG, "Hindi TTS engine is not available.");
-            return false;
-        }
-
-        try {
-            java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
-            String utteranceId = "hi_tts_" + System.currentTimeMillis();
-
-            hindiTtsEngine.setOnUtteranceProgressListener(new android.speech.tts.UtteranceProgressListener() {
-                @Override
-                public void onStart(String id) {}
-
-                @Override
-                public void onDone(String id) {
-                    if (utteranceId.equals(id)) {
-                        latch.countDown();
-                    }
-                }
-
-                @Override
-                public void onError(String id) {
-                    if (utteranceId.equals(id)) {
-                        latch.countDown();
-                    }
-                }
-            });
-
-            File parent = outputFile.getParentFile();
-            if (parent != null && !parent.exists()) {
-                parent.mkdirs();
-            }
-
-            int res = hindiTtsEngine.synthesizeToFile(hindiText, null, outputFile, utteranceId);
-            if (res == android.speech.tts.TextToSpeech.SUCCESS) {
-                boolean completed = latch.await(4, java.util.concurrent.TimeUnit.SECONDS);
-                return completed && outputFile.exists() && outputFile.length() > 44;
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error during Hindi TTS synthesis fallback", e);
-        }
         return false;
     }
 
@@ -913,7 +1019,7 @@ public class TTSManager {
      */
     public synchronized void speakHindi(String hindiText) {
         if (hindiTtsEngine != null && isHindiTtsAvailable && hindiText != null) {
-            hindiTtsEngine.speak(hindiText, android.speech.tts.TextToSpeech.QUEUE_FLUSH, null, "hi_speak_" + System.currentTimeMillis());
+            hindiTtsEngine.speak(hindiText, TextToSpeech.QUEUE_FLUSH, null, "hi_speak_" + System.currentTimeMillis());
         }
     }
 

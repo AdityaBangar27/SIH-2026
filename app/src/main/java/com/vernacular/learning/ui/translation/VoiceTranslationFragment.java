@@ -30,10 +30,14 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.vernacular.learning.R;
 import com.vernacular.learning.ai.PipelineResult;
+import com.vernacular.learning.ai.TTSManager;
 import com.vernacular.learning.ai.VoicePipelineManager;
+import com.vernacular.learning.utils.AudioHelper;
 import com.vernacular.learning.utils.AudioPlayer;
 import com.vernacular.learning.utils.AudioRecorder;
 import com.vernacular.learning.utils.ThemeHelper;
+import com.vernacular.learning.utils.TwoWayTranslationHelper;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -103,7 +107,6 @@ public class VoiceTranslationFragment extends Fragment {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private VoicePipelineManager voicePipelineManager;
     private AudioRecorder audioRecorder;
-    private AudioPlayer audioPlayer;
     private boolean permissionRequestedForRecording = false;
 
     private final ActivityResultLauncher<String> requestPermissionLauncher =
@@ -186,7 +189,6 @@ public class VoiceTranslationFragment extends Fragment {
         }
 
         audioRecorder = new AudioRecorder();
-        audioPlayer = new AudioPlayer();
         voicePipelineManager = new VoicePipelineManager();
 
         setupControls();
@@ -216,6 +218,8 @@ public class VoiceTranslationFragment extends Fragment {
         // Swap Direction Button
         if (btnSwapDirection != null) {
             btnSwapDirection.setOnClickListener(v -> {
+                AudioPlayer.getInstance().stop();
+                AudioHelper.stopPlayback();
                 if (voicePipelineManager != null && voicePipelineManager.isBusy()) {
                     Toast.makeText(requireContext(), "AI pipeline is busy processing...", Toast.LENGTH_SHORT).show();
                     return;
@@ -287,37 +291,15 @@ public class VoiceTranslationFragment extends Fragment {
         // Audio Playback button (Santali or Hindi depending on direction)
         btnPlaySantali.setOnClickListener(v -> {
             if (currentOutputAudioFile != null && currentOutputAudioFile.exists() && currentOutputAudioFile.length() > 44) {
-                final String targetLang = isHindiToSantali ? "Santali" : "Hindi";
-                audioPlayer.play(currentOutputAudioFile, new AudioPlayer.PlaybackCallback() {
-                    @Override
-                    public void onPlaybackStarted() {
-                        if (isAdded()) {
-                            tvPlaySantaliLabel.setText("Playing " + targetLang + " audio...");
-                            tvStudentStatus.setText("Playing " + targetLang + " audio...");
-                            badgeStudentState.setText("Playing");
-                        }
-                    }
-
-                    @Override
-                    public void onPlaybackCompleted() {
-                        if (isAdded()) {
-                            tvPlaySantaliLabel.setText(isHindiToSantali ? "Play Santali" : "Play Hindi");
-                            tvStudentStatus.setText(R.string.speech_ready);
-                            badgeStudentState.setText("Ready");
-                        }
-                    }
-
-                    @Override
-                    public void onError(String message) {
-                        if (isAdded()) {
-                            tvPlaySantaliLabel.setText(isHindiToSantali ? "Play Santali" : "Play Hindi");
-                            tvStudentStatus.setText("Playback error.");
-                            badgeStudentState.setText("Ready");
-                        }
-                    }
-                });
+                playOutputAudio(currentOutputAudioFile);
             } else {
-                Toast.makeText(requireContext(), (isHindiToSantali ? "Santali" : "Hindi") + " TTS audio unavailable.", Toast.LENGTH_SHORT).show();
+                String studentText = tvStudentTranslated != null && tvStudentTranslated.getText() != null
+                        ? tvStudentTranslated.getText().toString().trim() : "";
+                if (!studentText.isEmpty()) {
+                    synthesizeAndPlayOutput(studentText);
+                } else {
+                    Toast.makeText(requireContext(), (isHindiToSantali ? "Santali" : "Hindi") + " TTS audio unavailable.", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -327,6 +309,9 @@ public class VoiceTranslationFragment extends Fragment {
      */
     private void startRecording() {
         if (!isAdded()) return;
+
+        AudioPlayer.getInstance().stop();
+        AudioHelper.stopPlayback();
 
         if (!isHindiToSantali) {
             Toast.makeText(requireContext(), "Offline Santali voice recognition is unavailable on this device. Please enter or paste Santali text to translate into Hindi.", Toast.LENGTH_LONG).show();
@@ -459,13 +444,14 @@ public class VoiceTranslationFragment extends Fragment {
                             badgeStudentState.setText("Ready");
                             setPlayButtonEnabled(true);
                             tvEngineStatus.setText(R.string.speech_ready);
+                            playOutputAudio(currentOutputAudioFile);
                         } else {
                             currentOutputAudioFile = null;
-                            tvStudentStatus.setText("Text translation ready (TTS unavailable)");
+                            tvStudentStatus.setText("Text translation ready");
                             tvPlaySantaliLabel.setText(isHindiToSantali ? "Play Santali" : "Play Hindi");
                             badgeStudentState.setText("Ready");
-                            setPlayButtonEnabled(false);
-                            tvEngineStatus.setText("Text translation ready (TTS unavailable)");
+                            setPlayButtonEnabled(true);
+                            tvEngineStatus.setText("Text translation ready");
                         }
 
                         // Complete performance measurement and update card
@@ -609,6 +595,9 @@ public class VoiceTranslationFragment extends Fragment {
      * Supports both Hindi -> Santali and Santali -> Hindi directions.
      */
     private void processTextTranslation(String inputText) {
+        AudioPlayer.getInstance().stop();
+        AudioHelper.stopPlayback();
+
         if (voicePipelineManager == null || !voicePipelineManager.isInitialized()) {
             Toast.makeText(requireContext(), "AI Pipeline is initializing...", Toast.LENGTH_SHORT).show();
             return;
@@ -632,15 +621,15 @@ public class VoiceTranslationFragment extends Fragment {
                 // Translation Stage
                 long tTrans0 = System.currentTimeMillis();
                 String translatedText = null;
-                String normalized = com.vernacular.learning.utils.TwoWayTranslationHelper.normalize(inputText);
+                String normalized = TwoWayTranslationHelper.normalize(inputText);
 
                 if (isHindiToSantali) {
-                    if (com.vernacular.learning.utils.TwoWayTranslationHelper.hasVerifiedTranslation(normalized)) {
-                        translatedText = com.vernacular.learning.utils.TwoWayTranslationHelper.getVerifiedTranslation(normalized);
+                    if (TwoWayTranslationHelper.hasVerifiedTranslation(normalized)) {
+                        translatedText = TwoWayTranslationHelper.getVerifiedTranslation(normalized);
                     }
                 } else {
-                    if (com.vernacular.learning.utils.TwoWayTranslationHelper.hasVerifiedSantaliTranslation(normalized)) {
-                        translatedText = com.vernacular.learning.utils.TwoWayTranslationHelper.getVerifiedSantaliTranslation(normalized);
+                    if (TwoWayTranslationHelper.hasVerifiedSantaliTranslation(normalized)) {
+                        translatedText = TwoWayTranslationHelper.getVerifiedSantaliTranslation(normalized);
                     }
                 }
 
@@ -650,9 +639,9 @@ public class VoiceTranslationFragment extends Fragment {
 
                 if (translatedText == null || translatedText.isEmpty()) {
                     if (isHindiToSantali) {
-                        translatedText = com.vernacular.learning.utils.TwoWayTranslationHelper.getVerifiedTranslation(normalized);
+                        translatedText = TwoWayTranslationHelper.getVerifiedTranslation(normalized);
                     } else {
-                        translatedText = com.vernacular.learning.utils.TwoWayTranslationHelper.getVerifiedSantaliTranslation(normalized);
+                        translatedText = TwoWayTranslationHelper.getVerifiedSantaliTranslation(normalized);
                     }
                 }
                 if (translatedText == null) {
@@ -705,13 +694,14 @@ public class VoiceTranslationFragment extends Fragment {
                         badgeStudentState.setText("Ready");
                         setPlayButtonEnabled(true);
                         tvEngineStatus.setText(R.string.speech_ready);
+                        playOutputAudio(finalAudio);
                     } else {
                         currentOutputAudioFile = null;
-                        tvStudentStatus.setText("Text translation ready (TTS unavailable)");
+                        tvStudentStatus.setText("Text translation ready");
                         tvPlaySantaliLabel.setText(playLabel);
                         badgeStudentState.setText("Ready");
-                        setPlayButtonEnabled(false);
-                        tvEngineStatus.setText("Text translation ready (TTS unavailable)");
+                        setPlayButtonEnabled(true);
+                        tvEngineStatus.setText("Text translation ready");
                     }
 
                     onTranslationCompleted(result);
@@ -781,6 +771,108 @@ public class VoiceTranslationFragment extends Fragment {
             tvPlaySantaliLabel.setTextColor(disabledText);
             ivPlaySantaliIcon.setImageTintList(ColorStateList.valueOf(disabledText));
         }
+    }
+
+    private void playOutputAudio(File audioFile) {
+        if (!isAdded() || audioFile == null || !audioFile.exists() || audioFile.length() <= 44) {
+            return;
+        }
+        currentOutputAudioFile = audioFile;
+        final String targetLang = isHindiToSantali ? "Santali" : "Hindi";
+        AudioPlayer.getInstance().play(requireContext(), audioFile, new AudioPlayer.PlaybackCallback() {
+            @Override
+            public void onPlaybackStarted() {
+                if (isAdded()) {
+                    tvPlaySantaliLabel.setText("Playing " + targetLang + " audio...");
+                    tvStudentStatus.setText("Playing " + targetLang + " audio...");
+                    badgeStudentState.setText("Playing");
+                }
+            }
+
+            @Override
+            public void onPlaybackCompleted() {
+                if (isAdded()) {
+                    tvPlaySantaliLabel.setText(isHindiToSantali ? "Play Santali" : "Play Hindi");
+                    tvStudentStatus.setText(R.string.speech_ready);
+                    badgeStudentState.setText("Ready");
+                }
+            }
+
+            @Override
+            public void onError(String message) {
+                if (isAdded()) {
+                    tvPlaySantaliLabel.setText(isHindiToSantali ? "Play Santali" : "Play Hindi");
+                    tvStudentStatus.setText("Playback error.");
+                    badgeStudentState.setText("Ready");
+                }
+            }
+        });
+    }
+
+    private void synthesizeAndPlayOutput(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            Toast.makeText(requireContext(), (isHindiToSantali ? "Santali" : "Hindi") + " TTS audio unavailable.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        final Context context = getContext();
+        if (context == null) return;
+
+        final String cleanText = text.trim();
+        final String targetLang = isHindiToSantali ? "Santali" : "Hindi";
+
+        tvStudentStatus.setText("Generating " + targetLang + " speech...");
+        badgeStudentState.setText("Generating");
+
+        new Thread(() -> {
+            try {
+                TTSManager ttsManager = TTSManager.getInstance();
+                if (!ttsManager.isAvailable()) {
+                    ttsManager.initialize(context.getApplicationContext());
+                }
+
+                File cacheDir = new File(context.getCacheDir(), "tts_cache");
+                if (!cacheDir.exists()) cacheDir.mkdirs();
+                String cacheKey = cleanText + "_" + targetLang;
+                String safeHash = String.valueOf(Math.abs(cacheKey.hashCode()));
+                File cacheFile = new File(cacheDir, "tts_" + safeHash + ".wav");
+
+                File resultFile = null;
+                if (cacheFile.exists() && cacheFile.length() > 44) {
+                    resultFile = cacheFile;
+                } else {
+                    if (isHindiToSantali) {
+                        resultFile = ttsManager.synthesize(cleanText, "Santali", cacheFile);
+                    } else {
+                        boolean ok = ttsManager.synthesizeHindi(cleanText, cacheFile);
+                        if (ok) resultFile = cacheFile;
+                    }
+                }
+
+                final File finalAudio = resultFile;
+                handler.post(() -> {
+                    if (!isAdded()) return;
+                    if (finalAudio != null && finalAudio.exists() && finalAudio.length() > 44) {
+                        currentOutputAudioFile = finalAudio;
+                        setPlayButtonEnabled(true);
+                        playOutputAudio(finalAudio);
+                    } else {
+                        tvStudentStatus.setText("TTS audio unavailable.");
+                        badgeStudentState.setText("Ready");
+                        Toast.makeText(requireContext(), targetLang + " TTS audio unavailable.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "On-demand TTS synthesis error", e);
+                handler.post(() -> {
+                    if (isAdded()) {
+                        tvStudentStatus.setText("TTS audio unavailable.");
+                        badgeStudentState.setText("Ready");
+                        Toast.makeText(requireContext(), targetLang + " TTS audio unavailable.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }).start();
     }
 
     private void resetToIdleDelayed(long delayMs) {
@@ -861,9 +953,8 @@ public class VoiceTranslationFragment extends Fragment {
         if (audioRecorder != null && audioRecorder.isRecording()) {
             audioRecorder.stopRecording();
         }
-        if (audioPlayer != null && audioPlayer.isPlaying()) {
-            audioPlayer.stop();
-        }
+        AudioPlayer.getInstance().stop();
+        AudioHelper.stopPlayback();
     }
 
     @Override
@@ -875,10 +966,7 @@ public class VoiceTranslationFragment extends Fragment {
             audioRecorder.release();
             audioRecorder = null;
         }
-        if (audioPlayer != null) {
-            audioPlayer.release();
-            audioPlayer = null;
-        }
+        AudioPlayer.getInstance().release();
         if (voicePipelineManager != null) {
             voicePipelineManager.close();
             voicePipelineManager = null;
